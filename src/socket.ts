@@ -1,12 +1,13 @@
-let io = require('socket.io');
+import {Server} from "http";
+import {Socket} from "net";
+import * as ioEntry from "socket.io";
 
-
-const runSockets = (server) => {
-    const connections = [];
-    io = io.listen(server);
+const runSockets = (server: Server) => {
+    const connections: Socket[] = [];
+    const io = ioEntry.listen(server);
 
     console.log('sockets are running ......');
-    io.sockets.on('connection',(socket) => {
+    io.sockets.on('connection', (socket: Socket) => {
         connections.push(socket);
         console.log(' %s sockets is connected', connections.length);
 

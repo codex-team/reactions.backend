@@ -1,8 +1,9 @@
 import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
-import config from './config';
 import http from 'http';
+
+import config from './config';
 import runSockets from './socket';
 
 
