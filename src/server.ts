@@ -5,7 +5,7 @@ import http from 'http';
 
 import config from './config';
 import runSockets from './socket';
-
+import routes from './routes';
 
 const app = express();
 const server = http.createServer(app);
@@ -14,9 +14,6 @@ server.listen(config.http.port, () => {
     console.log('server is running ......')
 });
 
+app.use(routes);
+
 runSockets(server);
-
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
