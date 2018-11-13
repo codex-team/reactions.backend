@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
 import http from 'http';
+import cors from 'cors';
 
 import config from './config';
 import runSockets from './socket';
@@ -16,5 +17,7 @@ server.listen(config.http.port, () => {
 });
 
 app.use(routes.getRoutes());
+
+app.use(cors());
 
 runSockets(server);
