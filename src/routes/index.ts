@@ -1,17 +1,30 @@
-import express from 'express';
-import {getReactions} from "../actions";
+import express, {Express} from 'express';
+import {Actions} from "../actions";
 import Reactions from "../models/Reactions";
 
-const app = express();
+export class Routes {
 
-app.get('/', (req, res) => {
-    getReactions().then((reactions: Reactions) => {
-        res.send({msg: 'Server is up and running', reactions});
-    });
-});
+    private readonly app: Express;
+    private readonly actions: Actions;
 
-app.all('*', (req, res) => {
-    res.status(404).send({msg: 'not found'});
-});
+    constructor() {
+        this.actions = new Actions();
+        this.app = express();
+    }
 
-export default app;
+    public bindRoutes() {
+        this.app.get('/', (req, res) => {
+            this.actions.getReactions().then((reactions: Reactions) => {
+                res.send({msg: 'Server is up and running', reactions});
+            });
+        });
+
+        this.app.all('*', (req, res) => {
+            res.status(404).send({msg: 'not found'});
+        });
+
+        return this.app;
+
+    }
+
+}

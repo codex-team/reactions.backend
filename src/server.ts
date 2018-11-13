@@ -5,15 +5,16 @@ import http from 'http';
 
 import config from './config';
 import runSockets from './socket';
-import routes from './routes';
+import {Routes} from './routes';
 
 const app = express();
 const server = http.createServer(app);
+const routes = new Routes();
 
 server.listen(config.http.port, () => {
     console.log('server is running ......')
 });
 
-app.use(routes);
+app.use(routes.bindRoutes());
 
 runSockets(server);
