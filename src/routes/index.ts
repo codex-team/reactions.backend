@@ -12,7 +12,7 @@ export class Routes {
         this.app = express();
     }
 
-    public bindRoutes() {
+    public getRoutes() {
         this.app.get('/', (req, res) => {
             this.actions.getReactions().then((reactions: Reactions) => {
                 res.send({msg: 'Server is up and running', reactions});

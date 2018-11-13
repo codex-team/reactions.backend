@@ -15,6 +15,6 @@ server.listen(config.http.port, () => {
     console.log('server is running ......')
 });
 
-app.use(routes.bindRoutes());
+app.use(routes.getRoutes());
 
 runSockets(server);
