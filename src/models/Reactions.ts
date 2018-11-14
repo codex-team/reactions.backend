@@ -6,10 +6,11 @@ export default class Reactions {
     public readonly reactions: Reaction[];
     public readonly votedReactionId?: number;
 
-    constructor(id: string,
-                label: string,
-                reactions: Reaction[],
-                votedReactionId?: number
+    constructor (
+        id: string,
+        label: string,
+        reactions: Reaction[],
+        votedReactionId?: number
     ) {
         this.id = id;
         this.label = label;

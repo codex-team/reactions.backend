@@ -3,9 +3,11 @@ export default class Reaction {
     private voteCount: number;
     private iconUnicode: string;
 
-    constructor(id: string,
-                voteCount: number,
-                iconUnicode: string) {
+    constructor (
+        id: string,
+        voteCount: number,
+        iconUnicode: string
+    ) {
         this.id = id;
         this.voteCount = voteCount;
         this.iconUnicode = iconUnicode;

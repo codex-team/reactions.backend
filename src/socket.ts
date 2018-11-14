@@ -1,5 +1,5 @@
 import {Server} from "http";
-import {Socket} from "net";
+import {Socket} from "socket.io";
 import * as ioEntry from "socket.io";
 
 const runSockets = (server: Server) => {

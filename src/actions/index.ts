@@ -6,15 +6,16 @@ export class Actions {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(new Reactions('testId', 'testLabel', []));
-            },1000);
+            }, 1000);
         });
+
     };
 
     public saveReactions(reactions: Reactions): Promise<Reactions> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(new Reactions('testId', 'testLabel', []));
-            },1000);
+            }, 1000);
         });
     }
 
