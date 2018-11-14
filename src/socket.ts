@@ -1,10 +1,9 @@
 import {Server} from "http";
-import {Socket} from "socket.io";
-import * as ioEntry from "socket.io";
+import Io, {Socket} from "socket.io";
 
 const runSockets = (server: Server) => {
     const connections: Socket[] = [];
-    const io = ioEntry.listen(server);
+    const io = Io.listen(server);
 
     console.log('sockets are running ......');
     io.sockets.on('connection', (socket: Socket) => {
