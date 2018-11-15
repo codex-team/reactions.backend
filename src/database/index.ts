@@ -1,53 +1,105 @@
-import {MongoClient} from 'mongodb';
+import { MongoClient, Collection } from 'mongodb'
 
-const standartUrl = 'mongodb://localhost:27017/reactions';
+const standartUrl = 'mongodb://localhost:27017'
+const databaseName = 'reactions'
+const countersCollectionName = 'counters'
 
+/** Database wrapper */
 export default class Database {
 
-  private client: MongoClient;
-  private connection: any;
-  private db: any;
+  /**
+   * Promise which connects to the mongodb server
+   *
+   * @type {Promise<MongoClient>}
+   * @private
+   */
+  private connection: Promise<MongoClient>
 
-  constructor(url: string=standartUrl) {
-    this.connection = MongoClient.connect(url);
+  /**
+   * Creates an instance of Database
+   *
+   * @this {Database}
+   * @param {string} url - mongodb adress
+   * @constructor
+   */
+  constructor (url: string) {
+    this.connection = MongoClient.connect(url, { useNewUrlParser: true })
   }
 
-  private async getCollection(collection) {
+  /**
+   * Returns the collection promise from the mongodb server
+   *
+   * @this {Database}
+   * @param {string} collection - name of the collection what user needs
+   * @private
+   */
+  private async getCollection (collection: string): Promise<Collection> {
+
     try {
-      const db = await this.connection;
-      return db.collection(collection);
+
+      const db = (await this.connection).db(databaseName)
+      return db.collection(collection)
+
     } catch (e) {
-      console.log('Database server is unaviable');
-      return undefined;
+
+      console.log('Database server is unaviable: ' + e.message)
+      return undefined
+
     }
+
   }
 
-  public async find(domain: string, articleID: string, userID: string) {
-    
-    const objectToFind = {
-      articleID: articleID,
-      userID: userID
-    };
+  /**
+   * Inserts elements in the database
+   *
+   * @this {Database}
+   * @param {string} collectionsName - name of the collection
+   * @param {...object} elements - elements are need to be inserted
+   * @param {Promise<void>} Promise without returning value
+   */
+  public async insert (collectionsName: string, ...elements: object[]): Promise<void> {
+    const collection = await this.getCollection(collectionsName)
+    collection.insertMany(query)
+  }
 
-    try {
+  /**
+   * Finds elements in the database
+   *
+   * @this {Database}
+   * @param {string} collectionsName - name of the collection
+   * @param {object} query - filter for the collection
+   * @returns {Promise< Array<object> >} Array of the finding objects
+   */
+  public async find (collectionsName: string, query: object= {}): Promise< Array<object> > {
+    const collection = await this.getCollection(collectionsName)
+    return collection.find(query).toArray()
+  }
 
-      const collection = await this.getCollection(domain)
+  /**
+   * Updates elements in the database
+   *
+   * @this {Database}
+   * @param {string} collectionsName - name of the collection
+   * @param {object} query - filter for the collection
+   * @param {object} updater - rules for the update
+   * @returns {Promise<void>} Promise without returning value
+   */
+  public async update (collectionsName: string, query: object, updater: object): Promise<void> {
+    const collection = await this.getCollection(collectionsName)
+    collection.updateMany(query, updater)
+  }
 
-      if (collection !== undefined) {
-        return collection.find(objectToFind);
-      } else {
-        throw new Error();
-      }
-    
-    } catch (e) {
-      console.log('Server doesn\'t have data at this adress');
-      return undefined;
-    }
-
+  /**
+   * Removes elements in the database
+   *
+   * @this {Database}
+   * @param {string} collectionsName - name of the collection
+   * @param {object} query - filter for the collection
+   * @returns {Promise<void>} Promise without returning value
+   */
+  public async remove (collectionsName: string, query: object): Promise<void> {
+    const collection = await this.getCollection(collectionsName)
+    collection.remove(query)
   }
 
 }
-
-const db = new Database();
-db.find('1', '2', '3');
-
