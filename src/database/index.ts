@@ -17,7 +17,7 @@ export default class Database {
    * @type {string}
    * @private
    */
-  private databaseName: string
+  private dbName: string
 
   /**
    * Creates an instance of Database
@@ -26,9 +26,9 @@ export default class Database {
    * @param {string} url - mongodb adress
    * @constructor
    */
-  constructor (url: string, databaseName: string) {
+  constructor (url: string, dbName: string) {
     this.connection = MongoClient.connect(url, { useNewUrlParser: true })
-    this.databaseName = databaseName
+    this.dbName = dbName
   }
 
   /**
@@ -42,7 +42,7 @@ export default class Database {
 
     try {
 
-      const db = (await this.connection).db(this.databaseName)
+      const db = (await this.connection).db(this.dbName)
       return db.collection(collection)
 
     } catch (e) {
@@ -64,7 +64,7 @@ export default class Database {
    */
   public async insert (collectionsName: string, ...elements: object[]): Promise<void> {
     const collection = await this.getCollection(collectionsName)
-    collection.insertMany(query)
+    collection.insertMany(elements)
   }
 
   /**
