@@ -75,7 +75,7 @@ export default class Database {
    * @param {object} query - filter for the collection
    * @returns {Promise< Array<object> >} Array of the finding objects
    */
-  public async find (collectionsName: string, query: object= {}): Promise< Array<object> > {
+  public async find (collectionsName: string, query: object= {}): Promise< Array<any> > {
     const collection = await this.getCollection(collectionsName)
     return collection.find(query).toArray()
   }
