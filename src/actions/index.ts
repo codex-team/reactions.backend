@@ -1,8 +1,14 @@
 import Reactions from "../models/Reactions";
 
+/** Class aggregating an application business logic. */
 export class Actions {
 
-    public getReactions(): Promise<Reactions> {
+    /**
+     * Return Reactions by id.
+     * @param {any} id - id of requested reactions.
+     * @return {Promise<Reactions>} promise emitting reactions.
+     */
+    public getReactions(id: any): Promise<Reactions> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {
                 resolve(new Reactions('testId', 'testLabel', []));
@@ -11,6 +17,11 @@ export class Actions {
 
     };
 
+    /**
+     * Save Reactions.
+     * @param {Reactions} reactions - reactions to save.
+     * @return {Promise<Reactions>} promise emitting reactions.
+     */
     public saveReactions(reactions: Reactions): Promise<Reactions> {
         return new Promise((resolve, reject) => {
             setTimeout(() => {

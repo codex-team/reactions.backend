@@ -1,6 +1,10 @@
 import {Server} from "http";
 import Io, {Socket} from "socket.io";
 
+/**
+ * Start sockets observing.
+ * @param {Server} server - The instance of the node Server.
+ */
 const runSockets = (server: Server) => {
     const connections: Socket[] = [];
     const io = Io.listen(server);
