@@ -1,9 +1,5 @@
 import { MongoClient, Collection } from 'mongodb'
 
-const standartUrl = 'mongodb://localhost:27017'
-const databaseName = 'reactions'
-const countersCollectionName = 'counters'
-
 /** Database wrapper */
 export default class Database {
 
@@ -16,14 +12,23 @@ export default class Database {
   private connection: Promise<MongoClient>
 
   /**
+   * Name of the database
+   *
+   * @type {string}
+   * @private
+   */
+  private databaseName: string
+
+  /**
    * Creates an instance of Database
    *
    * @this {Database}
    * @param {string} url - mongodb adress
    * @constructor
    */
-  constructor (url: string) {
+  constructor (url: string, databaseName: string) {
     this.connection = MongoClient.connect(url, { useNewUrlParser: true })
+    this.databaseName = databaseName
   }
 
   /**
@@ -37,7 +42,7 @@ export default class Database {
 
     try {
 
-      const db = (await this.connection).db(databaseName)
+      const db = (await this.connection).db(this.databaseName)
       return db.collection(collection)
 
     } catch (e) {
