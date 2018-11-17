@@ -64,7 +64,7 @@ export default class Database {
    */
   public async insert (collectionsName: string, ...elements: object[]): Promise<void> {
     const collection = await this.getCollection(collectionsName)
-    collection.insertMany(elements)
+    await collection.insertMany(elements)
   }
 
   /**
@@ -91,7 +91,7 @@ export default class Database {
    */
   public async update (collectionsName: string, query: object, updater: object): Promise<void> {
     const collection = await this.getCollection(collectionsName)
-    collection.updateMany(query, updater)
+    await collection.updateMany(query, updater)
   }
 
   /**
@@ -104,7 +104,7 @@ export default class Database {
    */
   public async remove (collectionsName: string, query: object): Promise<void> {
     const collection = await this.getCollection(collectionsName)
-    collection.remove(query)
+    await collection.deleteMany(query)
   }
 
 }
