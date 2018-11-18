@@ -47,9 +47,8 @@ export default class Database {
 
     } catch (e) {
 
-      console.log('Database server is unaviable: ' + e.message)
-      return undefined
-
+      throw e
+    
     }
 
   }
@@ -63,8 +62,18 @@ export default class Database {
    * @param {Promise<void>} Promise without returning value
    */
   public async insert (collectionsName: string, ...elements: object[]): Promise<void> {
-    const collection = await this.getCollection(collectionsName)
-    await collection.insertMany(elements)
+
+    try {
+
+      const collection = await this.getCollection(collectionsName)
+      await collection.insertMany(elements)
+    
+    } catch (e) {
+
+      throw e
+    
+    }
+
   }
 
   /**
@@ -76,8 +85,16 @@ export default class Database {
    * @returns {Promise< Array<object> >} Array of the finding objects
    */
   public async find (collectionsName: string, query: object= {}): Promise< Array<any> > {
-    const collection = await this.getCollection(collectionsName)
-    return collection.find(query).toArray()
+
+    try {
+
+      const collection = await this.getCollection(collectionsName)
+      return collection.find(query).toArray()
+    
+    } catch (e) {
+    
+      throw e
+    }
   }
 
   /**
@@ -90,8 +107,17 @@ export default class Database {
    * @returns {Promise<void>} Promise without returning value
    */
   public async update (collectionsName: string, query: object, updater: object): Promise<void> {
-    const collection = await this.getCollection(collectionsName)
-    await collection.updateMany(query, updater)
+
+    try {
+
+      const collection = await this.getCollection(collectionsName)
+      await collection.updateMany(query, updater)
+    
+    } catch (e) {
+    
+      throw e
+    
+    }
   }
 
   /**
@@ -103,8 +129,17 @@ export default class Database {
    * @returns {Promise<void>} Promise without returning value
    */
   public async remove (collectionsName: string, query: object): Promise<void> {
-    const collection = await this.getCollection(collectionsName)
-    await collection.deleteMany(query)
+    
+    try {
+
+      const collection = await this.getCollection(collectionsName)
+      await collection.deleteMany(query)
+    
+    } catch (e) {
+    
+      throw e
+    
+    }
   }
 
 }
