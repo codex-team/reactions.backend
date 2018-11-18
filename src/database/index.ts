@@ -57,15 +57,15 @@ export default class Database {
    * Inserts elements in the database
    *
    * @this {Database}
-   * @param {string} collectionsName - name of the collection
+   * @param {string} collectionName - name of the collection
    * @param {...object} elements - elements are need to be inserted
    * @param {Promise<void>} Promise without returning value
    */
-  public async insert (collectionsName: string, ...elements: object[]): Promise<void> {
+  public async insert (collectionName: string, ...elements: object[]): Promise<void> {
 
     try {
 
-      const collection = await this.getCollection(collectionsName)
+      const collection = await this.getCollection(collectionName)
       await collection.insertMany(elements)
     
     } catch (e) {
@@ -80,15 +80,15 @@ export default class Database {
    * Finds elements in the database
    *
    * @this {Database}
-   * @param {string} collectionsName - name of the collection
+   * @param {string} collectionName - name of the collection
    * @param {object} query - filter for the collection
    * @returns {Promise< Array<object> >} Array of the finding objects
    */
-  public async find (collectionsName: string, query: object= {}): Promise< Array<any> > {
+  public async find (collectionName: string, query: object= {}): Promise< Array<any> > {
 
     try {
 
-      const collection = await this.getCollection(collectionsName)
+      const collection = await this.getCollection(collectionName)
       return collection.find(query).toArray()
     
     } catch (e) {
@@ -101,16 +101,16 @@ export default class Database {
    * Updates elements in the database
    *
    * @this {Database}
-   * @param {string} collectionsName - name of the collection
+   * @param {string} collectionName - name of the collection
    * @param {object} query - filter for the collection
    * @param {object} updater - rules for the update
    * @returns {Promise<void>} Promise without returning value
    */
-  public async update (collectionsName: string, query: object, updater: object): Promise<void> {
+  public async update (collectionName: string, query: object, updater: object): Promise<void> {
 
     try {
 
-      const collection = await this.getCollection(collectionsName)
+      const collection = await this.getCollection(collectionName)
       await collection.updateMany(query, updater)
     
     } catch (e) {
@@ -124,15 +124,15 @@ export default class Database {
    * Removes elements in the database
    *
    * @this {Database}
-   * @param {string} collectionsName - name of the collection
+   * @param {string} collectionName - name of the collection
    * @param {object} query - filter for the collection
    * @returns {Promise<void>} Promise without returning value
    */
-  public async remove (collectionsName: string, query: object): Promise<void> {
+  public async remove (collectionName: string, query: object): Promise<void> {
     
     try {
 
-      const collection = await this.getCollection(collectionsName)
+      const collection = await this.getCollection(collectionName)
       await collection.deleteMany(query)
     
     } catch (e) {
