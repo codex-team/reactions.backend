@@ -48,7 +48,7 @@ export default class Database {
     } catch (e) {
 
       throw e
-    
+
     }
 
   }
@@ -67,11 +67,11 @@ export default class Database {
 
       const collection = await this.getCollection(collectionName)
       await collection.insertMany(elements)
-    
+
     } catch (e) {
 
       throw e
-    
+
     }
 
   }
@@ -90,9 +90,9 @@ export default class Database {
 
       const collection = await this.getCollection(collectionName)
       return collection.find(query).toArray()
-    
+
     } catch (e) {
-    
+
       throw e
     }
   }
@@ -112,11 +112,11 @@ export default class Database {
 
       const collection = await this.getCollection(collectionName)
       await collection.updateMany(query, updater)
-    
+
     } catch (e) {
-    
+
       throw e
-    
+
     }
   }
 
@@ -129,16 +129,16 @@ export default class Database {
    * @returns {Promise<void>} Promise without returning value
    */
   public async remove (collectionName: string, query: object): Promise<void> {
-    
+
     try {
 
       const collection = await this.getCollection(collectionName)
       await collection.deleteMany(query)
-    
+
     } catch (e) {
-    
+
       throw e
-    
+
     }
   }
 

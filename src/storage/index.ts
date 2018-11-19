@@ -33,7 +33,7 @@ export default class Storage {
    * @type {Database}
    * @private
    */
-  private database: Database;
+  private database: Database
 
   /**
    * Creates an instance of the Storage
@@ -42,8 +42,8 @@ export default class Storage {
    * @param {string} [url=@see standartUrl] - the database's server adress
    * @param {string} [dbName=@see standartDbName] - the name of the database
    */
-  constructor(url: string=standartUrl, dbName: string=standartDbName) {
-    this.database = new Database(url, dbName);
+  constructor (url: string= standartUrl, dbName: string= standartDbName) {
+    this.database = new Database(url, dbName)
   }
 
   /**
@@ -56,8 +56,8 @@ export default class Storage {
    * @async
    * @return {Promise<void>}
    */
-  public async addArticle(domain: string, article: string, reactions: number): Promise<void> {
-    await this.addCounters(domain, article, reactions);
+  public async addArticle (domain: string, article: string, reactions: number): Promise<void> {
+    await this.addCounters(domain, article, reactions)
   }
 
   /**
@@ -69,12 +69,12 @@ export default class Storage {
    * @async
    * @return {Promise<void>}
    */
-  public async removeArticle(domain: string, article: string): Promise<void> {
-    await this.removeCounters(domain, article);
-    await this.database.remove(domain, {article: article});
+  public async removeArticle (domain: string, article: string): Promise<void> {
+    await this.removeCounters(domain, article)
+    await this.database.remove(domain, { article: article })
   }
 
-  /** 
+  /**
    * Checks whether article exists in the database
    *
    * @this {Storage}
@@ -83,8 +83,8 @@ export default class Storage {
    * @async
    * @return {Promise<boolean>} true if the article exists
    */
-  public async isArticleExists(domain: string, article: string): Promise<boolean> {
-    return await this.isCountersExist(domain, article);
+  public async isArticleExists (domain: string, article: string): Promise<boolean> {
+    return this.isCountersExist(domain, article)
   }
 
   /**
@@ -98,7 +98,7 @@ export default class Storage {
    * @private
    * @return {Promise<void>}
    */
-  private async addCounters(domain: string, article: string, reactions: number): Promise<void> {
+  private async addCounters (domain: string, article: string, reactions: number): Promise<void> {
     await this.database.insert(domain + countersPostfix, this.makeCountersData(article, true, reactions))
   }
 
@@ -111,18 +111,18 @@ export default class Storage {
    * @async
    * @return {Promise< Array<number> >}
    */
-  public async getCounters(domain: string, article: string): Promise< Array<number> > {
-    
+  public async getCounters (domain: string, article: string): Promise< Array<number> > {
+
     try {
-      
-      const answerFromDb = await this.database.find(domain + countersPostfix, this.makeCountersData(article));
-      return answerFromDb[0].rates;
-    
+
+      const answerFromDb = await this.database.find(domain + countersPostfix, this.makeCountersData(article))
+      return answerFromDb[0].rates
+
     } catch (e) {
 
-      console.log('Article on this domain is not exist');
-      return null;
-    
+      console.log('Article on this domain is not exist')
+      return null
+
     }
 
   }
@@ -138,13 +138,13 @@ export default class Storage {
    * @private
    * @return {Promise<void>}
    */
-  private async updateCounters(domain: string, article: string, rates: Array<number>): Promise<void> {
-    
+  private async updateCounters (domain: string, article: string, rates: Array<number>): Promise<void> {
+
     await this.database.update(
       domain + countersPostfix,
       this.makeCountersData(article),
-      {$set: {rates: rates}}
-    );
+      { $set: { rates: rates } }
+    )
 
   }
 
@@ -160,20 +160,20 @@ export default class Storage {
    * @private
    * @return {Promise<void>}
    */
-  private async changeCounter(domain: string, article: string, user: string, reaction: number): Promise<void> {
-  
-    const rates = await this.getCounters(domain, article);
-    const oldReaction = await this.getUserReaction(domain, article, user);
+  private async changeCounter (domain: string, article: string, user: string, reaction: number): Promise<void> {
+
+    const rates = await this.getCounters(domain, article)
+    const oldReaction = await this.getUserReaction(domain, article, user)
 
     if (oldReaction !== -1) {
-      rates[oldReaction]--;
+      rates[oldReaction]--
     }
 
     if (reaction !== -1) {
-      rates[reaction]++;
+      rates[reaction]++
     }
 
-    await this.updateCounters(domain, article, rates);
+    await this.updateCounters(domain, article, rates)
 
   }
 
@@ -187,8 +187,8 @@ export default class Storage {
    * @private
    * @return {Promise<void>}
    */
-  private async removeCounters(domain: string, article: string): Promise<void> {
-    await this.database.remove(domain + countersPostfix, this.makeCountersData(article));
+  private async removeCounters (domain: string, article: string): Promise<void> {
+    await this.database.remove(domain + countersPostfix, this.makeCountersData(article))
   }
 
   /**
@@ -201,9 +201,9 @@ export default class Storage {
    * @private
    * @return {Promise<boolean>} true if the counters exist
    */
-  private async isCountersExist(domain: string, article: string): Promise<boolean> {
-    const answerFromDb = await this.database.find(domain, this.makeCountersData(article));
-    return answerFromDb.length > 0;
+  private async isCountersExist (domain: string, article: string): Promise<boolean> {
+    const answerFromDb = await this.database.find(domain, this.makeCountersData(article))
+    return answerFromDb.length > 0
   }
 
   /**
@@ -216,23 +216,23 @@ export default class Storage {
    * @private
    * @return {object} information about counters
    */
-  private makeCountersData(article: string, toInsert: boolean=false, reactions: number=0): object {
-    
-    const res: any =  {
-      article: article,
+  private makeCountersData (article: string, toInsert: boolean= false, reactions: number= 0): object {
+
+    const res: any = {
+      article: article
     }
 
     if (toInsert === true) {
-      
-      res.rates = new Array<number>(reactions);
-      
+
+      res.rates = new Array<number>(reactions)
+
       for (let i = 0; i < reactions; i++) {
-        res.rates[i] = 0;
+        res.rates[i] = 0
       }
 
     }
 
-    return res;
+    return res
 
   }
 
@@ -246,8 +246,8 @@ export default class Storage {
    * @async
    * @return {Promise<void>}
    */
-  public async addUserReaction(domain: string, article: string, user: string): Promise<void> {
-    await this.database.insert(domain, this.makeUserReactionData(article, user, true));
+  public async addUserReaction (domain: string, article: string, user: string): Promise<void> {
+    await this.database.insert(domain, this.makeUserReactionData(article, user, true))
   }
 
   /**
@@ -260,18 +260,18 @@ export default class Storage {
    * @async
    * @return {Promise<number>} number of the reaction selected by the user
    */
-  public async getUserReaction(domain: string, article: string, user: string): Promise<number> {
-    
+  public async getUserReaction (domain: string, article: string, user: string): Promise<number> {
+
     try {
 
-      const res = await this.database.find(domain, this.makeUserReactionData(article, user));
-      return res[0].reaction;
-    
+      const res = await this.database.find(domain, this.makeUserReactionData(article, user))
+      return res[0].reaction
+
     } catch (e) {
 
-      await this.addUserReaction(domain, article, user);
-      return -1;
-    
+      await this.addUserReaction(domain, article, user)
+      return -1
+
     }
 
   }
@@ -288,13 +288,13 @@ export default class Storage {
    * @private
    * @return {Promise<void>}
    */
-  private async updateUserReaction(domain: string, article: string, user: string, reaction: number): Promise<void> {
-    
+  private async updateUserReaction (domain: string, article: string, user: string, reaction: number): Promise<void> {
+
     await this.database.update(
       domain,
       this.makeUserReactionData(article, user),
-      {$set: {reaction: reaction}}
-    );
+      { $set: { reaction: reaction } }
+    )
 
   }
 
@@ -308,10 +308,10 @@ export default class Storage {
    * @async
    * @return {Promise<void>}
    */
-  public async removeUserReaction(domain: string, article: string, user: string): Promise<void> {
-  
-    await this.changeCounter(domain, article, user, -1);
-    await this.database.remove(domain, this.makeUserReactionData(article, user));
+  public async removeUserReaction (domain: string, article: string, user: string): Promise<void> {
+
+    await this.changeCounter(domain, article, user, -1)
+    await this.database.remove(domain, this.makeUserReactionData(article, user))
 
   }
 
@@ -325,7 +325,7 @@ export default class Storage {
    * @async
    * @return {boolean} true if user exists
    */
-  public async isUserExists(domain: string, article: string, user: string): Promise<boolean> {
+  public async isUserExists (domain: string, article: string, user: string): Promise<boolean> {
     const usersArray = await this.database.find(domain, this.makeUserReactionData(article, user))
     return usersArray.length > 0
   }
@@ -340,18 +340,18 @@ export default class Storage {
    * @private
    * @return {object}
    */
-  private makeUserReactionData(article: string, user: string, toInsert: boolean=false): object {
-    
+  private makeUserReactionData (article: string, user: string, toInsert: boolean= false): object {
+
     const res: any = {
       article: article,
-      user: user,
+      user: user
     }
 
     if (toInsert === true) {
       res.reaction = -1
     }
 
-    return res;
+    return res
 
   }
 
@@ -366,10 +366,10 @@ export default class Storage {
    * @async
    * @return {Promise<void>}
    */
-  public async vote(domain: string, article: string, user: string, reaction: number): Promise<void> {
+  public async vote (domain: string, article: string, user: string, reaction: number): Promise<void> {
 
-    await this.changeCounter(domain, article, user, reaction);
-    await this.updateUserReaction(domain, article, user, reaction);
+    await this.changeCounter(domain, article, user, reaction)
+    await this.updateUserReaction(domain, article, user, reaction)
 
   }
 
