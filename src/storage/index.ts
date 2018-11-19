@@ -128,7 +128,7 @@ export default class Storage {
   }
 
   /**
-   * Updates value of the counters
+   * Updates values of the counters
    *
    * @this {Storage}
    * @param {string} domain - domain adress
@@ -147,7 +147,36 @@ export default class Storage {
     );
 
   }
+
+  /**
+   * Changes the values of the counter
+   *
+   * @this {Storage}
+   * @param {string} domain - domain adress
+   * @param {string} article - article ID
+   * @param {string} user - user ID
+   * @param {number} reaction - new number of the selected reaction
+   * @async
+   * @private
+   * @return {Promise<void>}
+   */
+  private async changeCounter(domain: string, article: string, user: string, reaction: number): Promise<void> {
   
+    const rates = await this.getCounters(domain, article);
+    const oldReaction = await this.getUserReaction(domain, article, user);
+
+    if (oldReaction !== -1) {
+      rates[oldReaction]--;
+    }
+
+    if (reaction !== -1) {
+      rates[reaction]++;
+    }
+
+    await this.updateCounters(domain, article, rates);
+
+  }
+
   /**
    * Removes counters from the Database
    *
@@ -280,7 +309,10 @@ export default class Storage {
    * @return {Promise<void>}
    */
   public async removeUserReaction(domain: string, article: string, user: string): Promise<void> {
+  
+    await this.changeCounter(domain, article, user, -1);
     await this.database.remove(domain, this.makeUserReactionData(article, user));
+
   }
 
   /**
@@ -335,15 +367,8 @@ export default class Storage {
    * @return {Promise<void>}
    */
   public async vote(domain: string, article: string, user: string, reaction: number): Promise<void> {
-    
-    const rates = await this.getCounters(domain, article);
-    const oldReaction = await this.getUserReaction(domain, article, user);
 
-    if (oldReaction !== -1) {
-      rates[oldReaction]--;
-    }
-
-    await this.updateCounters(domain, article, rates);
+    await this.changeCounter(domain, article, user, reaction);
     await this.updateUserReaction(domain, article, user, reaction);
 
   }
