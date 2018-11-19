@@ -99,7 +99,10 @@ export default class Storage {
    * @return {Promise<void>}
    */
   private async addCounters (domain: string, article: string, reactions: number): Promise<void> {
-    await this.database.insert(domain + countersPostfix, this.makeCountersData(article, true, reactions))
+
+    const data = this.makeCountersData(article, true, reactions)
+    await this.database.insert(domain + countersPostfix, data)
+
   }
 
   /**
@@ -216,7 +219,7 @@ export default class Storage {
    * @private
    * @return {object} information about counters
    */
-  private makeCountersData (article: string, toInsert: boolean= false, reactions: number= 0): object {
+  private makeCountersData (article: string, toInsert: boolean = false, reactions: number= 0): object {
 
     const res: any = {
       article: article
