@@ -116,17 +116,8 @@ export default class Storage {
    */
   public async getCounters (domain: string, article: string): Promise< Array<number> > {
 
-    try {
-
       const answerFromDb = await this.database.find(domain + countersPostfix, this.makeCountersData(article))
       return answerFromDb[0].rates
-
-    } catch (e) {
-
-      console.log('Article on this domain is not exist')
-      return null
-
-    }
 
   }
 

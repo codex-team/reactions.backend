@@ -27,8 +27,10 @@ export default class Database {
    * @constructor
    */
   constructor (url: string, dbName: string) {
+
     this.connection = MongoClient.connect(url, { useNewUrlParser: true })
     this.dbName = dbName
+  
   }
 
   /**
@@ -40,16 +42,8 @@ export default class Database {
    */
   private async getCollection (collection: string): Promise<Collection> {
 
-    try {
-
-      const db = (await this.connection).db(this.dbName)
-      return db.collection(collection)
-
-    } catch (e) {
-
-      throw e
-
-    }
+    const db = (await this.connection).db(this.dbName)
+    return db.collection(collection)
 
   }
 
@@ -63,16 +57,8 @@ export default class Database {
    */
   public async insert (collectionName: string, ...elements: object[]): Promise<void> {
 
-    try {
-
-      const collection = await this.getCollection(collectionName)
-      await collection.insertMany(elements)
-
-    } catch (e) {
-
-      throw e
-
-    }
+    const collection = await this.getCollection(collectionName)
+    await collection.insertMany(elements)
 
   }
 
@@ -86,15 +72,9 @@ export default class Database {
    */
   public async find (collectionName: string, query: object= {}): Promise< Array<any> > {
 
-    try {
+    const collection = await this.getCollection(collectionName)
+    return collection.find(query).toArray()
 
-      const collection = await this.getCollection(collectionName)
-      return collection.find(query).toArray()
-
-    } catch (e) {
-
-      throw e
-    }
   }
 
   /**
@@ -108,16 +88,9 @@ export default class Database {
    */
   public async update (collectionName: string, query: object, updater: object): Promise<void> {
 
-    try {
+    const collection = await this.getCollection(collectionName)
+    await collection.updateMany(query, updater)
 
-      const collection = await this.getCollection(collectionName)
-      await collection.updateMany(query, updater)
-
-    } catch (e) {
-
-      throw e
-
-    }
   }
 
   /**
@@ -130,16 +103,9 @@ export default class Database {
    */
   public async remove (collectionName: string, query: object): Promise<void> {
 
-    try {
-
       const collection = await this.getCollection(collectionName)
       await collection.deleteMany(query)
 
-    } catch (e) {
-
-      throw e
-
-    }
   }
 
 }
