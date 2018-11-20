@@ -277,4 +277,27 @@ export default class Storage {
   
   }
 
+  /**
+   * Removes domain
+   *
+   * @this {Storage}
+   * @param {string} domain - domain's adress
+   * @async
+   * @return {Promise<void>}
+   */
+  public async removeDomain (domain: string) {
+    await this.database.drop(domain)
+  }
+
+  /**
+   * Clears storage
+   *
+   * @this {Storage}
+   * @async
+   * @return {Promise<void>}
+   */
+  public async clearStorage () {
+    await this.database.dropDatabase()
+  }
+
 }
