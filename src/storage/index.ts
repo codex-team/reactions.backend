@@ -1,20 +1,20 @@
 import Database from './../database/index'
 
 /**
- * Standart value of the url
+ * Default value of the url
  *
  * @type {string}
  * @global
  */
-const standartUrl = 'mongodb://localhost:27017'
+const defaultUrl = 'mongodb://localhost:27017'
 
 /**
- * Standart value of database
+ * Default value of database
  *
  * @type {string}
  * @global
  */
-const standartDbName = 'reactions'
+const defaultDbName = 'reactions'
 
 /**
  * Postfix which indicates counters collection
@@ -39,10 +39,10 @@ export default class Storage {
    * Creates an instance of the Storage
    *
    * @this {Database}
-   * @param {string} [url=@see standartUrl] - the database's server adress
-   * @param {string} [dbName=@see standartDbName] - the name of the database
+   * @param {string} [url=@see defaultUrl] - the database's server adress
+   * @param {string} [dbName=@see defaultDbName] - the name of the database
    */
-  constructor (url: string= standartUrl, dbName: string= standartDbName) {
+  constructor (url: string= defaultUrl, dbName: string= defaultDbName) {
     this.database = new Database(url, dbName)
   }
 
