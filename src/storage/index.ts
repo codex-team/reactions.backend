@@ -1,20 +1,6 @@
 import Database from './../database/index'
-
-/**
- * Default value of the url
- *
- * @type {string}
- * @global
- */
-const defaultUrl = 'mongodb://localhost:27017'
-
-/**
- * Default value of database
- *
- * @type {string}
- * @global
- */
-const defaultDbName = 'reactions'
+import dotenv from 'dotenv'
+dotenv.config({path: 'vars/database.env'})
 
 /**
  * Postfix which indicates counters collection
@@ -39,10 +25,10 @@ export default class Storage {
    * Creates an instance of the Storage
    *
    * @this {Database}
-   * @param {string} [url=@see defaultUrl] - the database's server adress
-   * @param {string} [dbName=@see defaultDbName] - the name of the database
+   * @param {string} [url=@see config.URL] - the database's server adress
+   * @param {string} [dbName=@see config.DbName] - the name of the database
    */
-  constructor (url: string= defaultUrl, dbName: string= defaultDbName) {
+  constructor (url: string = process.env.URL as string, dbName: string = process.env.DB_NAME as string) {
     this.database = new Database(url, dbName)
   }
 
