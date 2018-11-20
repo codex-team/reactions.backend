@@ -108,4 +108,27 @@ export default class Database {
 
   }
 
+  /**
+   * Removes collection from the database
+   *
+   * @this {Database}
+   * @param {string} collectionName - name of the collection
+   * @async
+   * @return {Promise<void>}
+   */
+  public async drop (collectionName: string): Promise<void> {
+    (await this.getCollection(collectionName)).drop()
+  }
+
+  /**
+   * Clears all the database
+   *
+   * @this {Database}
+   * @async
+   * @return {Promise<void>}
+   */
+  public async dropDatabase () {
+    const db = (await this.connection).db(this.dbName).dropDatabase()
+  }
+
 }
