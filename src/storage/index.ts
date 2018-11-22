@@ -296,7 +296,7 @@ export default class Storage {
    * @async
    * @return {Promise<void>}
    */
-  public async clearStorage () {
+  public async clear () {
     await this.database.reset()
   }
 
