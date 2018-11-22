@@ -1,4 +1,6 @@
 import Database from './../database/index'
+import ReactionsController from './../reactions-controller/index' 
+import Reactions from './../reactions/index'
 import dotenv from 'dotenv'
 dotenv.config({path: 'vars/database.env'})
 
@@ -25,20 +27,19 @@ export default class Storage {
    * @this {Storage}
    * @param {string} domainID - domain's ID
    * @param {string} articleID - article's ID
-   * @param {number} [length = 0] - length of the reactions
    * @async
    * @private
    * @return {Promise<void>}
    */
-  private async addReactions(domainID: string, articleID: string, length: number = 0): Promise<void> {
+  private async addReactions(domainID: string, articleID: string): Promise<void> {
 
-    const reactionsData = this.makeReactionsData(articleID, length)
+    const reactionsData = this.makeReactionsData(articleID, true)
     await this.database.insert(this.getReactionsCollectionName(domainID), reactionsData)
   
   }
 
   /**
-   * Returns reactions array
+   * Returns reactions object
    *
    * @this {Storage}
    * @param {string} domainID - domain's ID
@@ -46,7 +47,7 @@ export default class Storage {
    * @async
    * @return {Promise < Array<number> >}
    */
-  public async getReactions(domainID: string, articleID: string): Promise< Array<number> > {
+  public async getReactions(domainID: string, articleID: string): Promise<Reactions> {
 
     const reactionsData = this.makeReactionsData(articleID);
     const result = await this.database.find(this.getReactionsCollectionName(domainID), reactionsData)
@@ -55,7 +56,7 @@ export default class Storage {
       return result[0].reactions
     } else {
       await this.addReactions(domainID, articleID)
-      return []
+      return {}
     }
   
   }
@@ -95,18 +96,18 @@ export default class Storage {
    *
    * @this {Storage}
    * @param {string} articleID - article's ID
-   * @param {number} [length = 0] - amount of the reactions
+   * @param {boolean} [toInsert = false] - flag which indicates aim of the calling method
    * @private
    * @return {object} information about counters
    */
-  private makeReactionsData(articleID: string, length: number = 0): object {
+  private makeReactionsData(articleID: string, toInsert: boolean = false): object {
     
     const result: any = {
       articleID: articleID
     }
-    
-    if (length > 0) {
-      result.reactions = new Array<number>(length)
+
+    if (toInsert) {
+      result.reactions = {}
     }
 
     return result
@@ -141,19 +142,19 @@ export default class Storage {
    * @async
    * @return {Promise<number>} - number of the reaction
    */
-  public async getUserReaction(domainID: string, articleID: string, userID: string): Promise<number> {
+  public async getUserReaction(domainID: string, articleID: string, userID: string): Promise<string> {
 
     const userReactionData = this.makeUserReactionData(articleID, userID)
     const result = await this.database.find(domainID, userReactionData)
 
     if (result.length > 0) {
 
-      return result[0].index
+      return result[0].emojiID
     
     } else {
       
       await this.addUserReaction(domainID, articleID, userID)
-      return -1
+      return ''
 
     }
   
@@ -171,7 +172,7 @@ export default class Storage {
    */
   public async removeUserReaction(domainID: string, articleID: string, userID: string): Promise<void> {
     
-    await this.vote(domainID, articleID, userID, -1)
+    await this.vote(domainID, articleID, userID, '')
     await this.database.remove(domainID, this.makeUserReactionData(articleID, userID))
   
   }
@@ -194,7 +195,7 @@ export default class Storage {
     }
 
     if (toInsert) {
-      result.index = -1
+      result.emojiID = ''
     }
 
     return result
@@ -208,52 +209,35 @@ export default class Storage {
    * @param {string} domainID - domain's ID
    * @param {string} articleID - article's ID
    * @param {stirng} userID - user's ID
-   * @param {number} index - number of the selected reaction
+   * @param {string} emojiID - ID of the emoji which selected by the user
    * @async
    * @return {Promise<void>}
    */
-  public async vote(domainID: string, articleID: string, userID: string, index: number): Promise<void> {
+  public async vote(domainID: string, articleID: string, userID: string, emojiID: string): Promise<void> {
 
-    const reactions = await this.getReactions(domainID, articleID)
-    const oldIndex = await this.getUserReaction(domainID, articleID, userID)
-
-    if (oldIndex !== -1) {
-      reactions[oldIndex]--
+    const reactionsController = new ReactionsController(await this.getReactions(domainID, articleID))
+    const oldEmojiID = await this.getUserReaction(domainID, articleID, userID)
+    
+    if (oldEmojiID !== '') {
+      reactionsController.decrement(oldEmojiID)
     }
 
-    this.fixArray(reactions, index)
-    if (index !== -1) {
-      reactions[index]++
+    if (emojiID !== '') {
+      reactionsController.increment(emojiID)
     }
 
     await this.database.update(
       this.getReactionsCollectionName(domainID),
       this.makeReactionsData(articleID),
-      {$set: {reactions: reactions}}
+      {$set: {reactions: reactionsController.getReactions()}}
     )
 
     await this.database.update(
       domainID,
       this.makeUserReactionData(articleID, userID),
-      {$set: {index: index}}
+      {$set: {emojiID: emojiID}}
     )
     
-  }
-
-  /**
-   * Fixes array's length if it's necessary
-   *
-   * @this {Storage}
-   * @param {Array<number>} array - array to fix
-   * @param {number} index - index of the array
-   * @private
-   */
-  private fixArray(array: Array<number>, index: number) {
-    
-    for (let i = array.length; i <= index; i++) {
-      array.push(0)
-    }
-  
   }
 
   /**
