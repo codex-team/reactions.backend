@@ -1,8 +1,6 @@
 import Database from './../database/index'
 import ReactionsController from './../reactions-controller/index' 
 import Reactions from './../reactions/index'
-import dotenv from 'dotenv'
-dotenv.config({path: 'vars/database.env'})
 
 /** Class which controls database */
 export default class Storage {
