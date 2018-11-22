@@ -33,7 +33,7 @@ export default class Storage {
   private async addReactions(domainID: string, articleID: string, length: number = 0): Promise<void> {
 
     const reactionsData = this.makeReactionsData(articleID, length)
-    await this.database.insert(this.getReactionsDomain(domainID), reactionsData)
+    await this.database.insert(this.getReactionsCollectionName(domainID), reactionsData)
   
   }
 
@@ -49,7 +49,7 @@ export default class Storage {
   public async getReactions(domainID: string, articleID: string): Promise< Array<number> > {
 
     const reactionsData = this.makeReactionsData(articleID);
-    const result = await this.database.find(this.getReactionsDomain(domainID), reactionsData)
+    const result = await this.database.find(this.getReactionsCollectionName(domainID), reactionsData)
 
     if (result.length > 0) {
       return result[0].reactions
@@ -72,7 +72,7 @@ export default class Storage {
   public async removeReactions(domainID: string, articleID: string): Promise<void> {
 
     const reactionsData = this.makeReactionsData(articleID);
-    await this.database.remove(this.getReactionsDomain(domainID), reactionsData)
+    await this.database.remove(this.getReactionsCollectionName(domainID), reactionsData)
     await this.database.remove(domainID, reactionsData)
   
   }
@@ -85,7 +85,7 @@ export default class Storage {
    * @private
    * @return {string} - name of the reactions collection
    */
-  private getReactionsDomain(domainID: string): string {
+  private getReactionsCollectionName(domainID: string): string {
     return domainID + process.env.REACTIONS_PREFIX
   }
   
@@ -227,7 +227,7 @@ export default class Storage {
     }
 
     await this.database.update(
-      this.getReactionsDomain(domainID),
+      this.getReactionsCollectionName(domainID),
       this.makeReactionsData(articleID),
       {$set: {reactions: reactions}}
     )
@@ -289,7 +289,7 @@ export default class Storage {
   public async removeDomain (domainID: string): Promise<void> {
 
     await this.database.removeCollection(domainID)
-    await this.database.removeCollection(this.getReactionsDomain(domainID))
+    await this.database.removeCollection(this.getReactionsCollectionName(domainID))
 
   }
 
