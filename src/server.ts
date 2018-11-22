@@ -21,3 +21,5 @@ app.use(routes.getRoutes());
 app.use(cors());
 
 runSockets(server);
+
+export default app;
