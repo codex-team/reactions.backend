@@ -2,11 +2,10 @@
   "name": "reactions.backend",
   "version": "1.0.0",
   "description": "Reactions backend",
-  "main": "src/index.ts",
-  "types": "src/index",
+  "main": "src/server.ts",
   "scripts": {
     "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
-    "execute": "ts-node src/index.ts",
+    "execute": "ts-node src/server.ts",
     "lint": "tslint ./src/**/*.ts --fix"
   },
   "repository": "https://github.com/codex-team/reactions.backend",
