@@ -116,7 +116,7 @@ export default class Database {
    * @async
    * @return {Promise<any>} - answer from mongodb
    */
-  public async drop (collectionName: string): Promise<any> {
+  public async removeCollection (collectionName: string): Promise<any> {
     return await (await this.getCollection(collectionName)).drop()
   }
 
@@ -127,7 +127,7 @@ export default class Database {
    * @async
    * @return {Promise<void>}
    */
-  public async dropDatabase (): Promise<void> {
+  public async reset (): Promise<void> {
     return await (await this.connection).db(this.dbName).dropDatabase()
   }
 
