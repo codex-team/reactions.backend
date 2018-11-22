@@ -286,7 +286,7 @@ export default class Storage {
    * @return {Promise<void>}
    */
   public async removeDomain (domain: string) {
-    await this.database.drop(domain)
+    await this.database.removeCollection(domain)
   }
 
   /**
@@ -297,7 +297,7 @@ export default class Storage {
    * @return {Promise<void>}
    */
   public async clearStorage () {
-    await this.database.dropDatabase()
+    await this.database.reset()
   }
 
 }
