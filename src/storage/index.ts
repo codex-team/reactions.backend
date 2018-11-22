@@ -23,17 +23,17 @@ export default class Storage {
    * Addes reactions in the database
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
    * @param {number} [length = 0] - length of the reactions
    * @async
    * @private
    * @return {Promise<void>}
    */
-  private async addReactions(domain: string, article: string, length: number = 0): Promise<void> {
+  private async addReactions(domainID: string, articleID: string, length: number = 0): Promise<void> {
 
-    const reactionsData = this.makeReactionsData(article, length)
-    await this.database.insert(this.getReactionsDomain(domain), reactionsData)
+    const reactionsData = this.makeReactionsData(articleID, length)
+    await this.database.insert(this.getReactionsDomain(domainID), reactionsData)
   
   }
 
@@ -41,20 +41,20 @@ export default class Storage {
    * Returns reactions array
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
    * @async
    * @return {Promise < Array<number> >}
    */
-  public async getReactions(domain: string, article: string): Promise< Array<number> > {
+  public async getReactions(domainID: string, articleID: string): Promise< Array<number> > {
 
-    const reactionsData = this.makeReactionsData(article);
-    const result = await this.database.find(this.getReactionsDomain(domain), reactionsData)
+    const reactionsData = this.makeReactionsData(articleID);
+    const result = await this.database.find(this.getReactionsDomain(domainID), reactionsData)
 
     if (result.length > 0) {
       return result[0].reactions
     } else {
-      await this.addReactions(domain, article)
+      await this.addReactions(domainID, articleID)
       return []
     }
   
@@ -64,16 +64,16 @@ export default class Storage {
    * Removes reactions and users
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
    * @async
    * @return {Promise<void>}
    */
-  public async removeReactions(domain: string, article: string): Promise<void> {
+  public async removeReactions(domainID: string, articleID: string): Promise<void> {
 
-    const reactionsData = this.makeReactionsData(article);
-    await this.database.remove(this.getReactionsDomain(domain), reactionsData)
-    await this.database.remove(domain, reactionsData)
+    const reactionsData = this.makeReactionsData(articleID);
+    await this.database.remove(this.getReactionsDomain(domainID), reactionsData)
+    await this.database.remove(domainID, reactionsData)
   
   }
   
@@ -81,12 +81,12 @@ export default class Storage {
    * Returns name of the reactions collection
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
+   * @param {string} domainID - domain's ID
    * @private
    * @return {string} - name of the reactions collection
    */
-  private getReactionsDomain(domain: string): string {
-    return domain + process.env.REACTIONS_PREFIX
+  private getReactionsDomain(domainID: string): string {
+    return domainID + process.env.REACTIONS_PREFIX
   }
   
   
@@ -94,15 +94,15 @@ export default class Storage {
    * Return special object which contains information about counters
    *
    * @this {Storage}
-   * @param {string} article - article's ID
+   * @param {string} articleID - article's ID
    * @param {number} [length = 0] - amount of the reactions
    * @private
    * @return {object} information about counters
    */
-  private makeReactionsData(article: string, length: number = 0): object {
+  private makeReactionsData(articleID: string, length: number = 0): object {
     
     const result: any = {
-      article: article
+      articleID: articleID
     }
     
     if (length > 0) {
@@ -117,17 +117,17 @@ export default class Storage {
    * Addes user's reaction
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
-   * @param {string} user - user's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
+   * @param {string} userID - user's ID
    * @async
    * @private
    * @return {Promise<void>}
    */
-  private async addUserReaction(domain: string, article: string, user: string): Promise<void> {
+  private async addUserReaction(domainID: string, articleID: string, userID: string): Promise<void> {
 
-    const userReactionData = this.makeUserReactionData(article, user, true)
-    await this.database.insert(domain, userReactionData)
+    const userReactionData = this.makeUserReactionData(articleID, userID, true)
+    await this.database.insert(domainID, userReactionData)
   
   }
 
@@ -135,15 +135,16 @@ export default class Storage {
    * Returns number of the reaction selected by the user or -1 if user didn't select
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
-   * @param {string} user - user's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
+   * @param {string} userID - user's ID
    * @async
    * @return {Promise<number>} - number of the reaction
    */
-  public async getUserReaction(domain: string, article: string, user: string): Promise<number> {
+  public async getUserReaction(domainID: string, articleID: string, userID: string): Promise<number> {
 
-    const result = ( await this.database.find(domain, {article: article, user: user}) )
+    const userReactionData = this.makeUserReactionData(articleID, userID)
+    const result = await this.database.find(domainID, userReactionData)
 
     if (result.length > 0) {
 
@@ -151,7 +152,7 @@ export default class Storage {
     
     } else {
       
-      await this.addUserReaction(domain, article, user)
+      await this.addUserReaction(domainID, articleID, userID)
       return -1
 
     }
@@ -162,16 +163,16 @@ export default class Storage {
    * Removes user's reaction
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
-   * @param {string} user - user's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
+   * @param {string} userID - user's ID
    * @async
    * @return {Promise<void>}
    */
-  public async removeUserReaction(domain: string, article: string, user: string): Promise<void> {
+  public async removeUserReaction(domainID: string, articleID: string, userID: string): Promise<void> {
     
-    await this.vote(domain, article, user, -1)
-    await this.database.remove(domain, this.makeUserReactionData(article, user))
+    await this.vote(domainID, articleID, userID, -1)
+    await this.database.remove(domainID, this.makeUserReactionData(articleID, userID))
   
   }
 
@@ -179,17 +180,17 @@ export default class Storage {
    * Returns speacial object contains information about reaction selected by user
    *
    * @this {Storage}
-   * @param {string} article - article's ID
-   * @param {string} user - user's ID
+   * @param {string} articleID - article's ID
+   * @param {string} userID - user's ID
    * @param {boolean} [toInsert = false] - flag which indicates aim of the calling method
    * @private
    * @return {object}
    */
-  private makeUserReactionData(article: string, user: string, toInsert: boolean = false): object {
+  private makeUserReactionData(articleID: string, userID: string, toInsert: boolean = false): object {
     
     const result: any = {
-      article: article,
-      user: user
+      articleID: articleID,
+      userID: userID
     }
 
     if (toInsert) {
@@ -204,17 +205,17 @@ export default class Storage {
    * Updates reactions and user's choice
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
-   * @param {string} article - article's ID
-   * @param {stirng} user - user's ID
+   * @param {string} domainID - domain's ID
+   * @param {string} articleID - article's ID
+   * @param {stirng} userID - user's ID
    * @param {number} index - number of the selected reaction
    * @async
    * @return {Promise<void>}
    */
-  public async vote(domain: string, article: string, user: string, index: number): Promise<void> {
+  public async vote(domainID: string, articleID: string, userID: string, index: number): Promise<void> {
 
-    const reactions = await this.getReactions(domain, article)
-    const oldIndex = await this.getUserReaction(domain, article, user)
+    const reactions = await this.getReactions(domainID, articleID)
+    const oldIndex = await this.getUserReaction(domainID, articleID, userID)
 
     if (oldIndex !== -1) {
       reactions[oldIndex]--
@@ -226,14 +227,14 @@ export default class Storage {
     }
 
     await this.database.update(
-      this.getReactionsDomain(domain),
-      this.makeReactionsData(article),
+      this.getReactionsDomain(domainID),
+      this.makeReactionsData(articleID),
       {$set: {reactions: reactions}}
     )
 
     await this.database.update(
-      domain,
-      this.makeUserReactionData(article, user),
+      domainID,
+      this.makeUserReactionData(articleID, userID),
       {$set: {index: index}}
     )
     
@@ -259,15 +260,15 @@ export default class Storage {
    * Return array of users
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
+   * @param {string} domain - domain's ID
    * @param {string} article - article's ID
    * @async
-   * @return {Promise< Array<string> >} - users
+   * @return {Promise< Array<string> >} - array of IDs for each user
    */
-  public async getUsers(domain: string, article: string): Promise< Array<string> > {
+  public async getUsersID(domainID: string, articleID: string): Promise< Array<string> > {
 
     const result = new Array<string>()
-    const users = ( await this.database.find(domain, {article: article}) )
+    const users = ( await this.database.find(domainID, {articleID: articleID}) )
 
     for (let i = 0; i < users.length; i++) {
       result.push(users[i].user)
@@ -281,14 +282,14 @@ export default class Storage {
    * Removes domain
    *
    * @this {Storage}
-   * @param {string} domain - domain's adress
+   * @param {string} domain - domain's ID
    * @async
    * @return {Promise<void>}
    */
-  public async removeDomain (domain: string): Promise<void> {
+  public async removeDomain (domainID: string): Promise<void> {
 
-    await this.database.removeCollection(domain)
-    await this.database.removeCollection(this.getReactionsDomain(domain))
+    await this.database.removeCollection(domainID)
+    await this.database.removeCollection(this.getReactionsDomain(domainID))
 
   }
 
