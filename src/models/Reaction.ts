@@ -1,13 +1,13 @@
 /** Class representing single reaction. */
 export default class Reaction {
     /** Reaction identifier. */
-    private id: string;
+  private id: string;
 
     /** Count of votes for the reaction. */
-    private voteCount: number;
+  private voteCount: number;
 
     /** Unicode for emoji. */
-    private iconUnicode: string;
+  private iconUnicode: string;
 
     /**
      * Create a Reaction class.
@@ -15,14 +15,14 @@ export default class Reaction {
      * @param {number} voteCount - count of votes for the reaction.
      * @param {string} iconUnicode - unicode for emoji.
      */
-    constructor (
+  constructor (
         id: string,
         voteCount: number,
         iconUnicode: string
     ) {
-        this.id = id;
-        this.voteCount = voteCount;
-        this.iconUnicode = iconUnicode;
+      this.id = id;
+      this.voteCount = voteCount;
+      this.iconUnicode = iconUnicode;
     }
 
 }

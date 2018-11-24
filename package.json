@@ -5,7 +5,8 @@
   "main": "dist/index",
   "types": "dist/index",
   "scripts": {
-    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts"
+    "start": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "lint": "tslint ./src/**/*.ts --fix"
   },
   "devDependencies": {
     "@types/cors": "^2.8.4",
@@ -24,6 +25,8 @@
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "express": "^4.16.4",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1"
   }
 }
