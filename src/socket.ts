@@ -24,11 +24,13 @@ const runSockets = (server: Server) => {
     socket.on('message', (message) => {
       console.log('Message is received :', message);
       const type = message.type;
-      //  message.moduleId = md5(message.moduleId);
+      // const moduleId = md5(message.moduleId);
       if (type == 'initialization') {
         socket.join(md5(message.moduleId));
       } else {
-        io.to(md5(message.moduleId)).emit('new message', { message: message });
+        message.votedReactionId = message.reaction;
+        message.reactions[message.reaction] = +message.reactions[message.reaction] + 1;
+        io.to(md5(message.moduleId)).emit('update', message);
       }
     });
   });
