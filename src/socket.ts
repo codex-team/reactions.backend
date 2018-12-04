@@ -1,5 +1,7 @@
 import { Server } from 'http';
 import Io, { Socket } from 'socket.io';
+import md5 from 'md5';
+
 
 /**
  * Start sockets observing.
@@ -15,16 +17,18 @@ const runSockets = (server: Server) => {
     console.log(' %s sockets is connected', connections.length);
 
     socket.on('disconnect', () => {
+      console.log('Socket disconnected');
       connections.splice(connections.indexOf(socket), 1);
     });
 
     socket.on('message', (message) => {
       console.log('Message is received :', message);
-      const moduleId = message.type;
-      if (moduleId == 'initialization') {
-        socket.join(message.moduleId);
+      const type = message.type;
+      //  message.moduleId = md5(message.moduleId);
+      if (type == 'initialization') {
+        socket.join(md5(message.moduleId));
       } else {
-        io.to(message.moduleId).emit('new message', { message: message });
+        io.to(md5(message.moduleId)).emit('new message', { message: message });
       }
     });
   });
