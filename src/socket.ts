@@ -30,14 +30,14 @@ const runSockets = (server: Server) => {
         case 'initialization':
           socket.join(md5(message.moduleId));
           break;
-        case 'vote':
-          message.reactions[message.reaction] = +message.reactions[message.reaction] + 1;
-          break;
-        case 'unvote':
-          message.reactions[message.reaction] = +message.reactions[message.reaction] - 1;
-          break;
+        // case 'vote':
+        //   message.reactions[message.votedReactionId] = +message.reactions[message.votedReactionId] + 1;
+        //   break;
+        // case 'unvote':
+        //   message.reactions[message.votedReactionId] = +message.reactions[message.votedReactionId] - 1;
+        //   break;
       }
-      io.to(md5(message.moduleId)).emit('update', message);
+      socket.broadcast.to(md5(message.moduleId)).emit('update', message);
     });
   });
 };
