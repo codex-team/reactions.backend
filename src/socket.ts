@@ -25,13 +25,16 @@ const runSockets = (server: Server) => {
       console.log('Message is received :', message);
       const type = message.type;
       // const moduleId = md5(message.moduleId);
-      if (type == 'initialization') {
-        socket.join(md5(message.moduleId));
-      } else {
-        message.votedReactionId = message.reaction;
-        message.reactions[message.reaction] = +message.reactions[message.reaction] + 1;
-        io.to(md5(message.moduleId)).emit('update', message);
+
+      switch (type) {
+        case 'initialization':
+          socket.join(md5(message.moduleId));
+        case 'vote':
+          message.reactions[message.reaction] = +message.reactions[message.reaction] + 1;
+        case 'unvote':
+          message.reactions[message.reaction] = +message.reactions[message.reaction] - 1;
       }
+      io.to(md5(message.moduleId)).emit('update', message);
     });
   });
 };
