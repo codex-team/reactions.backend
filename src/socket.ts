@@ -29,10 +29,13 @@ const runSockets = (server: Server) => {
       switch (type) {
         case 'initialization':
           socket.join(md5(message.moduleId));
+          break;
         case 'vote':
           message.reactions[message.reaction] = +message.reactions[message.reaction] + 1;
+          break;
         case 'unvote':
           message.reactions[message.reaction] = +message.reactions[message.reaction] - 1;
+          break;
       }
       io.to(md5(message.moduleId)).emit('update', message);
     });
