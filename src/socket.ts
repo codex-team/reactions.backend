@@ -24,18 +24,11 @@ const runSockets = (server: Server) => {
     socket.on('message', (message) => {
       console.log('Message is received :', message);
       const type = message.type;
-      // const moduleId = md5(message.moduleId);
 
       switch (type) {
         case 'initialization':
           socket.join(md5(message.moduleId));
           break;
-        // case 'vote':
-        //   message.reactions[message.votedReactionId] = +message.reactions[message.votedReactionId] + 1;
-        //   break;
-        // case 'unvote':
-        //   message.reactions[message.votedReactionId] = +message.reactions[message.votedReactionId] - 1;
-        //   break;
       }
       socket.broadcast.to(md5(message.moduleId)).emit('update', message);
     });
