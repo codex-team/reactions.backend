@@ -1,30 +1,38 @@
-import {Server} from "http";
-import Io, {Socket} from "socket.io";
+import { Server } from 'http';
+import Io, { Socket } from 'socket.io';
+import md5 from 'md5';
+
 
 /**
  * Start sockets observing.
  * @param {Server} server - The instance of the node Server.
  */
 const runSockets = (server: Server) => {
-    const connections: Socket[] = [];
-    const io = Io.listen(server);
+  const connections: Socket[] = [];
+  const io = Io.listen(server);
 
-    console.log('sockets are running ......');
-    io.sockets.on('connection', (socket: Socket) => {
-        connections.push(socket);
-        console.log(' %s sockets is connected', connections.length);
+  console.log('sockets are running ......');
+  io.sockets.on('connection', (socket: Socket) => {
+    connections.push(socket);
+    console.log(' %s sockets is connected', connections.length);
 
-        socket.on('disconnect', () => {
-            connections.splice(connections.indexOf(socket), 1);
-        });
-
-        socket.on('sending message', (message) => {
-            console.log('Message is received :', message);
-
-            io.sockets.emit('new message', {message: message});
-        });
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+      connections.splice(connections.indexOf(socket), 1);
     });
 
+    socket.on('message', (message) => {
+      console.log('Message is received :', message);
+      const type = message.type;
+
+      switch (type) {
+        case 'initialization':
+          socket.join(md5(message.moduleId));
+          break;
+      }
+      socket.broadcast.to(md5(message.moduleId)).emit('update', message);
+    });
+  });
 };
 
 export default runSockets;
