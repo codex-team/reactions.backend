@@ -1,7 +1,7 @@
 import { Server } from 'http';
 import Io, { Socket } from 'socket.io';
 import md5 from 'md5';
-
+import actions from './actions';
 
 /**
  * Start sockets observing.
@@ -21,16 +21,29 @@ const runSockets = (server: Server) => {
       connections.splice(connections.indexOf(socket), 1);
     });
 
-    socket.on('message', (message) => {
-      console.log('Message is received :', message);
+    socket.on('message', async (message) => {
       const type = message.type;
+      let reactions;
 
       switch (type) {
         case 'initialization':
-          socket.join(md5(message.moduleId));
+          socket.join(md5(message.id));
+
+          reactions = await actions.getReactions(message.origin, message);
+
+          socket.emit('update', reactions);
+          return;
+
+        case 'vote':
+          reactions = await actions.vote(message.origin, message);
+          break;
+
+        case 'unvote':
+          reactions = await actions.unvote(message.origin, message);
           break;
       }
-      socket.broadcast.to(md5(message.moduleId)).emit('update', message);
+
+      socket.broadcast.to(md5(message.id)).emit('update', reactions);
     });
   });
 };

@@ -1,4 +1,11 @@
-import { MongoClient, Collection, InsertWriteOpResult, UpdateWriteOpResult, DeleteWriteOpResultObject } from 'mongodb'
+import {
+  MongoClient,
+  Collection,
+  InsertWriteOpResult,
+  UpdateWriteOpResult,
+  DeleteWriteOpResultObject,
+  UpdateManyOptions, FilterQuery, UpdateQuery
+} from 'mongodb';
 
 /** Database wrapper */
 export default class Database {
@@ -9,7 +16,7 @@ export default class Database {
    * @type {Promise<MongoClient>}
    * @private
    */
-  private connection: Promise<MongoClient>
+  private connection: Promise<MongoClient>;
 
   /**
    * Name of the database
@@ -17,7 +24,7 @@ export default class Database {
    * @type {string}
    * @private
    */
-  private dbName: string
+  private dbName: string;
 
   /**
    * Creates an instance of Database
@@ -28,9 +35,9 @@ export default class Database {
    */
   constructor (url: string, dbName: string) {
 
-    this.connection = MongoClient.connect(url, { useNewUrlParser: true })
-    this.dbName = dbName
-  
+    this.connection = MongoClient.connect(url, { useNewUrlParser: true });
+    this.dbName = dbName;
+
   }
 
   /**
@@ -42,8 +49,8 @@ export default class Database {
    */
   private async getCollection (collection: string): Promise<Collection> {
 
-    const db = (await this.connection).db(this.dbName)
-    return db.collection(collection)
+    const db = (await this.connection).db(this.dbName);
+    return db.collection(collection);
 
   }
 
@@ -57,8 +64,8 @@ export default class Database {
    */
   public async insert (collectionName: string, ...elements: object[]): Promise<InsertWriteOpResult> {
 
-    const collection = await this.getCollection(collectionName)
-    return await collection.insertMany(elements)
+    const collection = await this.getCollection(collectionName);
+    return collection.insertMany(elements);
 
   }
 
@@ -67,13 +74,13 @@ export default class Database {
    *
    * @this {Database}
    * @param {string} collectionName - name of the collection
-   * @param {object} query - filter for the collection
-   * @returns {Promise< Array<any> >} Array of the finding objects
+   * @param {FilterQuery} query - filter for the collection
+   * @returns {Promise<any[]>} Array of the finding objects
    */
-  public async find (collectionName: string, query: object= {}): Promise< Array<any> > {
+  public async find (collectionName: string, query: FilterQuery<any> = {}): Promise<any[]> {
 
-    const collection = await this.getCollection(collectionName)
-    return collection.find(query).toArray()
+    const collection = await this.getCollection(collectionName);
+    return collection.find(query).toArray();
 
   }
 
@@ -82,14 +89,20 @@ export default class Database {
    *
    * @this {Database}
    * @param {string} collectionName - name of the collection
-   * @param {object} query - filter for the collection
-   * @param {object} updater - rules for the update
+   * @param {FilterQuery} query - filter for the collection
+   * @param {UpdateQuery} updater - rules for the update
+   * @param {UpdateManyOptions} options
    * @returns {Promise<UpdateWriteOpResult>} - answer from mongodb
    */
-  public async update (collectionName: string, query: object, updater: object): Promise<UpdateWriteOpResult> {
+  public async update (
+    collectionName: string,
+    query: FilterQuery<any>,
+    updater: UpdateQuery<any>,
+    options?: UpdateManyOptions
+  ): Promise<UpdateWriteOpResult> {
 
-    const collection = await this.getCollection(collectionName)
-    return await collection.updateMany(query, updater)
+    const collection = await this.getCollection(collectionName);
+    return collection.updateMany(query, updater, options);
 
   }
 
@@ -103,8 +116,8 @@ export default class Database {
    */
   public async remove (collectionName: string, query: object): Promise<DeleteWriteOpResultObject> {
 
-      const collection = await this.getCollection(collectionName)
-      return await collection.deleteMany(query)
+    const collection = await this.getCollection(collectionName);
+    return collection.deleteMany(query);
 
   }
 
@@ -117,7 +130,7 @@ export default class Database {
    * @return {Promise<any>} - answer from mongodb
    */
   public async removeCollection (collectionName: string): Promise<any> {
-    return await (await this.getCollection(collectionName)).drop()
+    return (await this.getCollection(collectionName)).drop();
   }
 
   /**
@@ -128,7 +141,7 @@ export default class Database {
    * @return {Promise<void>}
    */
   public async reset (): Promise<void> {
-    return await (await this.connection).db(this.dbName).dropDatabase()
+    return (await this.connection).db(this.dbName).dropDatabase();
   }
 
 }

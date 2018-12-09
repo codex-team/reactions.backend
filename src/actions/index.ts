@@ -1,33 +1,49 @@
 import Reactions from '../models/Reactions';
+import storage from '../storage';
 
 /** Class aggregating an application business logic. */
-export class Actions {
+export default class Actions {
 
-    /**
-     * Return Reactions by id.
-     * @param {any} id - id of requested reactions.
-     * @return {Promise<Reactions>} promise emitting reactions.
-     */
-  public getReactions (id: any): Promise<Reactions> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(new Reactions('testId', 'testLabel', []));
-      }, 1000);
-    });
+  /**
+   * Return Reactions by domain and id.
+   * @param {string} domain - module`s domain
+   * @param {Reactions} message
+   *
+   * @return {Promise<Reactions | undefined>} reactions.
+   */
+  public static async getReactions (domain: string, message: Reactions): Promise<Reactions | undefined> {
+    const reactions = new Reactions(message.id, message.title, message.options);
+    const dbResult = await storage.getReactions(domain, reactions);
 
+    if (dbResult && message.userId) {
+      dbResult.reaction = await storage.getUserReaction(domain, message.id, message.userId);
+      dbResult.userId = message.userId;
+    }
+
+    return dbResult;
   }
 
-    /**
-     * Save Reactions.
-     * @param {Reactions} reactions - reactions to save.
-     * @return {Promise<Reactions>} promise emitting reactions.
-     */
-  public saveReactions (reactions: Reactions): Promise<Reactions> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(new Reactions('testId', 'testLabel', []));
-      }, 1000);
-    });
+  /**
+   * Add user vote
+   *
+   * @param {string} domain - module`s domain
+   * @param {Reactions} message
+   *
+   * @return {Reactions} - updated reactions
+   */
+  public static async vote (domain: string, message: Reactions): Promise<Reactions | undefined> {
+    return storage.vote(domain, message.id, message.userId!, message.reaction!);
   }
 
+  /**
+   * Remove user vote
+   *
+   * @param {string} domain - module`s domain
+   * @param {Reactions} message
+   *
+   * @return {Reactions} - updated reactions
+   */
+  public static async unvote (domain: string, message: any): Promise<Reactions | undefined> {
+    return storage.unvote(domain, message.id, message.userId, message.reaction);
+  }
 }

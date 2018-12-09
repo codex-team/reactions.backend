@@ -1,290 +1,219 @@
-import Database from './../database/index'
-import ReactionsController from './../reactions-controller/index' 
-import Reactions from './../reactions/index'
+import Database from './../database/index';
+import Reactions from '../models/Reactions';
 
 /** Class which controls database */
-export default class Storage {
+export class Storage {
 
-  private database: Database
+  private database: Database;
 
   /**
    * Creates an instance of the Storage
    *
    * @constructor
    * @this {Storage}
-   * @param {string} [url=@see config.URL] - the database's server adress
+   * @param {string} [url=@see config.URL] - the database's server address
    * @param {string} [dbName=@see config.DbName] - the name of the database
    */
-  constructor (url: string = process.env.URL as string, dbName: string = process.env.DB_NAME as string) {
-    this.database = new Database(url, dbName)
+  constructor (url: string = process.env.DB_URL as string, dbName: string = process.env.DB_NAME as string) {
+    this.database = new Database(url, dbName);
   }
 
   /**
-   * Addes reactions in the database
+   * Returns reactions object for passed domain and id
    *
    * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
    * @async
-   * @private
-   * @return {Promise<void>}
-   */
-  private async addReactions(domainID: string, articleID: string): Promise<void> {
-
-    const reactionsData = this.makeReactionsData(articleID, true)
-    await this.database.insert(this.getReactionsCollectionName(domainID), reactionsData)
-  
-  }
-
-  /**
-   * Returns reactions object
    *
-   * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
-   * @async
-   * @return {Promise < Array<number> >}
+   * @param {string} domain - module`s domain
+   * @param {Reactions} reactions
+   * @return {Promise < Reactions | undefined >}
    */
-  public async getReactions(domainID: string, articleID: string): Promise<Reactions> {
+  public async getReactions (domain: string, reactions: Reactions): Promise<Reactions | undefined> {
+    const collection = this.getModulesCollection(domain);
+    const query = { id: reactions.id };
+    const result = await this.database.find(collection, query);
 
-    const reactionsData = this.makeReactionsData(articleID);
-    const result = await this.database.find(this.getReactionsCollectionName(domainID), reactionsData)
-
-    if (result.length > 0) {
-      return result[0].reactions
-    } else {
-      await this.addReactions(domainID, articleID)
-      return {}
-    }
-  
-  }
-
-  /**
-   * Removes reactions and users
-   *
-   * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
-   * @async
-   * @return {Promise<void>}
-   */
-  public async removeReactions(domainID: string, articleID: string): Promise<void> {
-
-    const reactionsData = this.makeReactionsData(articleID);
-    await this.database.remove(this.getReactionsCollectionName(domainID), reactionsData)
-    await this.database.remove(domainID, reactionsData)
-  
-  }
-  
-  /**
-   * Returns name of the reactions collection
-   *
-   * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @private
-   * @return {string} - name of the reactions collection
-   */
-  private getReactionsCollectionName(domainID: string): string {
-    return domainID + process.env.REACTIONS_PREFIX
-  }
-  
-  
-  /**
-   * Return special object which contains information about counters
-   *
-   * @this {Storage}
-   * @param {string} articleID - article's ID
-   * @param {boolean} [toInsert = false] - flag which indicates aim of the calling method
-   * @private
-   * @return {object} information about counters
-   */
-  private makeReactionsData(articleID: string, toInsert: boolean = false): object {
-    
-    const result: any = {
-      articleID: articleID
+    if (result.length === 0) {
+      this.database.insert(collection, reactions);
+      return;
     }
 
-    if (toInsert) {
-      result.reactions = {}
-    }
+    const { id, title, options } = result.shift();
 
-    return result
-
+    return new Reactions(id, title, options);
   }
 
   /**
-   * Addes user's reaction
+   * Returns id of the reaction selected by the user or undefined if user didn't vote
    *
    * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
-   * @param {string} userID - user's ID
    * @async
-   * @private
-   * @return {Promise<void>}
+   *
+   * @param {string} domain - module`s domain
+   * @param {string} id - module`s id
+   * @param {string} userId - user id
+   *
+   * @return {Promise<number | undefined>} - voted reaction
    */
-  private async addUserReaction(domainID: string, articleID: string, userID: string): Promise<void> {
+  public async getUserReaction (domain: string, id: string, userId: number | string): Promise<number | undefined> {
 
-    const userReactionData = this.makeUserReactionData(articleID, userID, true)
-    await this.database.insert(domainID, userReactionData)
-  
+    const collection = this.getUserReactionsCollection(domain, id);
+    const query = {
+      user: userId
+    };
+
+    const dbResult = await this.database.find(collection, query);
+
+    if (dbResult.length === 0) {
+      return;
+    }
+
+    return dbResult.shift().reaction;
   }
 
   /**
-   * Returns number of the reaction selected by the user or -1 if user didn't select
+   * Updates user's choice and reactions counters
    *
    * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
-   * @param {string} userID - user's ID
    * @async
-   * @return {Promise<number>} - number of the reaction
-   */
-  public async getUserReaction(domainID: string, articleID: string, userID: string): Promise<string> {
-
-    const userReactionData = this.makeUserReactionData(articleID, userID)
-    const result = await this.database.find(domainID, userReactionData)
-
-    if (result.length > 0) {
-
-      return result[0].emojiID
-    
-    } else {
-      
-      await this.addUserReaction(domainID, articleID, userID)
-      return ''
-
-    }
-  
-  }
-
-  /**
-   * Removes user's reaction
    *
-   * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
-   * @param {string} userID - user's ID
-   * @async
-   * @return {Promise<void>}
-   */
-  public async removeUserReaction(domainID: string, articleID: string, userID: string): Promise<void> {
-    
-    await this.vote(domainID, articleID, userID, '')
-    await this.database.remove(domainID, this.makeUserReactionData(articleID, userID))
-  
-  }
-
-  /**
-   * Returns speacial object contains information about reaction selected by user
+   * @param {string} domain - module`s domain
+   * @param {string} id - module`s id
+   * @param {string} userId - user id
+   * @param {string} reaction - voted reaction
    *
-   * @this {Storage}
-   * @param {string} articleID - article's ID
-   * @param {string} userID - user's ID
-   * @param {boolean} [toInsert = false] - flag which indicates aim of the calling method
-   * @private
-   * @return {object}
+   *  @return {Promise<Reactions | undefined>}
    */
-  private makeUserReactionData(articleID: string, userID: string, toInsert: boolean = false): object {
-    
-    const result: any = {
-      articleID: articleID,
-      userID: userID
+  public async vote (
+    domain: string,
+    id: string,
+    userId: number | string,
+    reaction: number
+  ): Promise<Reactions | undefined> {
+    const modulesCollection = this.getModulesCollection(domain);
+    const userReactionsCollection = this.getUserReactionsCollection(domain, id);
+
+    const savedReactions = await this.getReactions(domain, new Reactions(id));
+    const userReaction = await this.getUserReaction(domain, id, userId);
+
+    if (!savedReactions) {
+      return;
     }
 
-    if (toInsert) {
-      result.emojiID = ''
+    /**
+     * Is user voted previously, decrement his reaction
+     */
+    if (userReaction) {
+      savedReactions.options![userReaction]--;
     }
 
-    return result
+    savedReactions.options![reaction]++;
 
+    const moduleQuery = {
+      id: savedReactions!.id
+    };
+    const userReactionQuery = {
+      user: userId
+    };
+
+    /**
+     * Update counters
+     */
+    await this.database.update(
+      modulesCollection,
+      moduleQuery,
+      { $set: savedReactions }
+    );
+
+    /**
+     * Update user reaction
+     */
+    await this.database.update(
+      userReactionsCollection,
+      userReactionQuery,
+      { $set: { reaction } },
+      { upsert: true }
+    );
+
+    return new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
   }
 
   /**
    * Updates reactions and user's choice
    *
    * @this {Storage}
-   * @param {string} domainID - domain's ID
-   * @param {string} articleID - article's ID
-   * @param {stirng} userID - user's ID
-   * @param {string} emojiID - ID of the emoji which selected by the user
    * @async
    * @return {Promise<void>}
+   * @param domain
+   * @param id
+   * @param userId
+   * @param reaction
    */
-  public async vote(domainID: string, articleID: string, userID: string, emojiID: string): Promise<void> {
+  public async unvote (domain: string, id: string, userId: string, reaction: number): Promise<Reactions | undefined> {
 
-    const reactionsController = new ReactionsController(await this.getReactions(domainID, articleID))
-    const oldEmojiID = await this.getUserReaction(domainID, articleID, userID)
-    
-    if (oldEmojiID !== '') {
-      reactionsController.decrement(oldEmojiID)
+    const modulesCollection = this.getModulesCollection(domain);
+    const userReactionsCollection = this.getUserReactionsCollection(domain, id);
+    const savedReactions = await this.getReactions(domain, new Reactions(id));
+
+    if (!savedReactions) {
+      return;
     }
 
-    if (emojiID !== '') {
-      reactionsController.increment(emojiID)
-    }
+    savedReactions.options![reaction]--;
 
+    const moduleQuery = {
+      id: savedReactions!.id
+    };
+    const userReactionQuery = {
+      user: userId
+    };
+
+    /**
+     * Update counters
+     */
     await this.database.update(
-      this.getReactionsCollectionName(domainID),
-      this.makeReactionsData(articleID),
-      {$set: {reactions: reactionsController.getReactions()}}
-    )
+      modulesCollection,
+      moduleQuery,
+      { $set: savedReactions }
+    );
 
-    await this.database.update(
-      domainID,
-      this.makeUserReactionData(articleID, userID),
-      {$set: {emojiID: emojiID}}
-    )
-    
+    /**
+     * Remove user reaction
+     */
+    await this.database.remove(
+      userReactionsCollection,
+      userReactionQuery
+    );
+
+    return new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
   }
 
   /**
-   * Return array of users
+   * Returns name of the modules collection
    *
    * @this {Storage}
-   * @param {string} domain - domain's ID
-   * @param {string} article - article's ID
-   * @async
-   * @return {Promise< Array<string> >} - array of IDs for each user
+   * @private
+   *
+   * @param {string} domain - module`s domain
+   *
+   * @return {string} - name of the modules collection for given domain
    */
-  public async getUsersID(domainID: string, articleID: string): Promise< Array<string> > {
-
-    const result = new Array<string>()
-    const users = ( await this.database.find(domainID, {articleID: articleID}) )
-
-    for (let i = 0; i < users.length; i++) {
-      result.push(users[i].user)
-    }
-
-    return result
-  
+  private getModulesCollection (domain: string): string {
+    return `${domain}_${process.env.REACTIONS_PREFIX}`;
   }
 
   /**
-   * Removes domain
+   * Return name of the collection with user reactions
    *
-   * @this {Storage}
-   * @param {string} domain - domain's ID
-   * @async
-   * @return {Promise<void>}
-   */
-  public async removeDomain (domainID: string): Promise<void> {
-
-    await this.database.removeCollection(domainID)
-    await this.database.removeCollection(this.getReactionsCollectionName(domainID))
-
-  }
-
-
-  /**
-   * Clears storage
+   * @param {string} domain - module`s domain
+   * @param {string} id - module`s id
    *
-   * @this {Storage}
-   * @async
-   * @return {Promise<void>}
+   * @return {string} - name of the collection
    */
-  public async clear (): Promise<void> {
-    await this.database.reset()
+  private getUserReactionsCollection (domain: string, id: string): string {
+    return `${domain}_${process.env.REACTIONS_PREFIX}_${id}`;
   }
 
 }
+
+export default new Storage();
