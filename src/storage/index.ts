@@ -135,7 +135,12 @@ export class Storage {
       { upsert: true }
     );
 
-    return new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
+    const reactions = new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
+
+    reactions.userId = userId;
+    reactions.reaction = reaction;
+
+    return reactions;
   }
 
   /**
@@ -185,7 +190,12 @@ export class Storage {
       userReactionQuery
     );
 
-    return new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
+    const reactions = new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
+
+    reactions.userId = userId;
+    reactions.reaction = reaction;
+
+    return reactions;
   }
 
   /**
@@ -211,7 +221,7 @@ export class Storage {
    * @return {string} - name of the collection
    */
   private getUserReactionsCollection (domain: string, id: string): string {
-    return `${domain}_${process.env.REACTIONS_PREFIX}_${id}`;
+    return `${domain}__${id}`;
   }
 
 }

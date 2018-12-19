@@ -2,6 +2,7 @@ import { Server } from 'http';
 import Io, { Socket } from 'socket.io';
 import md5 from 'md5';
 import actions from './actions';
+import Reactions from './models/Reactions';
 
 /**
  * Start sockets observing.
@@ -23,7 +24,7 @@ const runSockets = (server: Server) => {
 
     socket.on('message', async (message) => {
       const type = message.type;
-      let reactions;
+      let reactions: Reactions | undefined;
 
       switch (type) {
         case 'initialization':
