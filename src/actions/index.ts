@@ -16,7 +16,12 @@ export default class Actions {
     const dbResult = await storage.getReactions(domain, reactions);
 
     if (dbResult && message.userId) {
-      dbResult.reaction = await storage.getUserReaction(domain, message.id, message.userId);
+      const userReaction = await storage.getUserReaction(domain, message.id, message.userId);
+
+      if (userReaction && userReaction in message.options!) {
+        dbResult.reaction = userReaction;
+      }
+
       dbResult.userId = message.userId;
     }
 
