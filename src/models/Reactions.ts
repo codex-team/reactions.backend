@@ -1,15 +1,22 @@
 /** Class representing reactions. */
 export default class Reactions {
-    /** Reactions identifier. */
+  /** Reactions identifier. */
   public readonly id: string;
 
-    /** Reactions text. */
+  /** Reactions text. */
   public readonly title?: string;
 
-    /** Collection of appended reactions. */
+  /** Collection of appended reactions. */
   public readonly options?: {[code: string]: number};
 
+  /**
+   * Hash of voted reaction
+   */
   public reaction?: number;
+
+  /**
+   * Id of user who has voted
+   */
   public userId?: number | string;
 
   /**
