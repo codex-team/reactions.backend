@@ -62,3 +62,10 @@ typings/
 
 # IDE folders
 .idea
+
+# Vim's swap files
+*.swp
+*.swo
+
+# env file
+.env

@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import { Actions } from '../actions';
+import Actions from '../actions';
 
 /** Class aggregating an application routes. */
 export class Routes {
@@ -14,7 +14,7 @@ export class Routes {
    * Create a route class.
    */
   constructor () {
-    this.actions = new Actions();
+    this.actions = Actions;
     this.app = express();
   }
 
@@ -25,9 +25,7 @@ export class Routes {
   public getRoutes (): Express {
     /** Root route */
     this.app.get('/', async (req, res) => {
-      const reactions = await this.actions.getReactions(undefined);
-      res.send({ msg: 'Server is up and running', reactions });
-
+      res.send({ msg: 'Server is up and running' });
     });
 
     /** Wrong route handle */
@@ -35,10 +33,7 @@ export class Routes {
       res.status(404).send({ msg: 'not found' });
     });
 
-
-
     return this.app;
-
   }
 
 }
