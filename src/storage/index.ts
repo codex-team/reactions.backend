@@ -40,7 +40,7 @@ export class Storage {
 
     const { id, title, options } = result.shift();
 
-    if (reactions.options) {
+    if (reactions.options && Object.keys(reactions.options).length) {
       const removedReactions = Object.keys(options).filter((hash: any) => !(hash in reactions.options!));
       const addedReactions = Object.keys(reactions.options).filter((hash: any) => !(hash in options));
 
