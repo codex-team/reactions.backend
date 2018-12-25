@@ -40,6 +40,36 @@ export class Storage {
 
     const { id, title, options } = result.shift();
 
+    if (reactions.options) {
+      const removedReactions = Object.keys(options).filter((hash: any) => !(hash in reactions.options!));
+      const addedReactions = Object.keys(reactions.options).filter((hash: any) => !(hash in options));
+
+      removedReactions.forEach(hash => {
+        delete options[hash];
+      });
+
+      removedReactions.forEach(hash => {
+        options[hash] = 0;
+      });
+
+      if (addedReactions.length) {
+        const newOptions = addedReactions.reduce((result, hash) => {
+          result[`options.${hash}`] = 0;
+          return result;
+        }, {} as any);
+
+        this.database.update(
+          collection,
+          {
+            id: reactions.id,
+          },
+          {
+            $set: {
+              ...newOptions
+            }
+          })
+      }
+    }
     return new Reactions(id, title, options);
   }
 
@@ -59,7 +89,7 @@ export class Storage {
 
     const collection = this.getUserReactionsCollection(domain, id);
     const query = {
-      user: userId
+      user: String(userId)
     };
 
     const dbResult = await this.database.find(collection, query);
@@ -68,7 +98,7 @@ export class Storage {
       return;
     }
 
-    return dbResult.shift().reaction;
+    return +dbResult.shift().reaction;
   }
 
   /**
@@ -92,29 +122,22 @@ export class Storage {
   ): Promise<Reactions | undefined> {
     const modulesCollection = this.getModulesCollection(domain);
     const userReactionsCollection = this.getUserReactionsCollection(domain, id);
-
-    const savedReactions = await this.getReactions(domain, new Reactions(id));
     const userReaction = await this.getUserReaction(domain, id, userId);
 
-    if (!savedReactions) {
-      return;
-    }
-
-    /**
-     * Is user voted previously, decrement his reaction
-     */
-    if (userReaction) {
-      savedReactions.options![userReaction]--;
-    }
-
-    savedReactions.options![reaction]++;
-
     const moduleQuery = {
-      id: savedReactions!.id
+      id: id
     };
     const userReactionQuery = {
-      user: userId
+      user: String(userId)
     };
+
+    const incOptions = {
+      [`options.${reaction}`]: 1
+    };
+
+    if (userReaction) {
+      incOptions[`options.${userReaction}`] = -1;
+    }
 
     /**
      * Update counters
@@ -122,7 +145,11 @@ export class Storage {
     await this.database.update(
       modulesCollection,
       moduleQuery,
-      { $set: savedReactions }
+      {
+        $inc: {
+          ...incOptions
+        }
+      }
     );
 
     /**
@@ -135,7 +162,8 @@ export class Storage {
       { upsert: true }
     );
 
-    const reactions = new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
+    const savedReactions = await this.getReactions(domain, new Reactions(id));
+    const reactions = new Reactions(savedReactions!.id, savedReactions!.title, savedReactions!.options);
 
     reactions.userId = userId;
     reactions.reaction = reaction;
@@ -158,19 +186,12 @@ export class Storage {
 
     const modulesCollection = this.getModulesCollection(domain);
     const userReactionsCollection = this.getUserReactionsCollection(domain, id);
-    const savedReactions = await this.getReactions(domain, new Reactions(id));
-
-    if (!savedReactions) {
-      return;
-    }
-
-    savedReactions.options![reaction]--;
 
     const moduleQuery = {
-      id: savedReactions!.id
+      id
     };
     const userReactionQuery = {
-      user: userId
+      user: String(userId)
     };
 
     /**
@@ -179,7 +200,9 @@ export class Storage {
     await this.database.update(
       modulesCollection,
       moduleQuery,
-      { $set: savedReactions }
+      {
+        $inc: {[`options.${reaction}`]: -1}
+      }
     );
 
     /**
@@ -190,7 +213,8 @@ export class Storage {
       userReactionQuery
     );
 
-    const reactions = new Reactions(savedReactions.id, savedReactions.title, savedReactions.options);
+    const savedReactions = await this.getReactions(domain, new Reactions(id));
+    const reactions = new Reactions(savedReactions!.id, savedReactions!.title, savedReactions!.options);
 
     reactions.userId = userId;
     reactions.reaction = reaction;
