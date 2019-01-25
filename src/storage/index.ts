@@ -46,9 +46,6 @@ export class Storage {
     if (result.length === 0) {
       await this.database.insert(collection, reactions);
 
-      /** Clear cache */
-      this.cache.del(moduleCacheKey);
-
       return;
     }
 
@@ -143,8 +140,6 @@ export class Storage {
     const modulesCollection = this.getModulesCollection(domain);
     const userReactionsCollection = this.getUserReactionsCollection(domain, id);
     const userReaction = await this.getUserReaction(domain, id, userId);
-
-    console.log('userReaction', userReaction);
 
     const moduleQuery = {
       id
