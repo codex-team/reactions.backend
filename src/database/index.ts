@@ -6,8 +6,6 @@ import {
   DeleteWriteOpResultObject,
   UpdateManyOptions, FilterQuery, UpdateQuery
 } from 'mongodb';
-// import Cache from './../cache/index';
-
 
 /** Database wrapper */
 export default class Database {
@@ -28,8 +26,6 @@ export default class Database {
    */
   private dbName: string;
 
-  // private cache: Cache;
-
   /**
    * Creates an instance of Database
    *
@@ -42,7 +38,6 @@ export default class Database {
 
     this.connection = MongoClient.connect(url, { useNewUrlParser: true });
     this.dbName = dbName;
-    // this.cache = new Cache({});
 
   }
 
@@ -60,14 +55,6 @@ export default class Database {
 
   }
 
-  // private generateCacheKey (collectionName: string, query?: {}) {
-  //   if (query) {
-  //     return `${collectionName}_${JSON.stringify(query)}`;
-  //   }
-  //
-  //   return `${collectionName}`;
-  // }
-
   /**
    * Inserts elements in the database
    *
@@ -77,9 +64,6 @@ export default class Database {
    * @param {Promise<InsertWriteOpResult>} - answer from mongodb
    */
   public async insert (collectionName: string, ...elements: object[]): Promise<InsertWriteOpResult> {
-
-    console.log('DB insert');
-    // this.cache.delStartWith();
 
     const collection = await this.getCollection(collectionName);
     return collection.insertMany(elements);
@@ -96,14 +80,8 @@ export default class Database {
    */
   public async find (collectionName: string, query: FilterQuery<any> = {}): Promise<any[]> {
 
-    // const cacheKey = this.generateCacheKey(collectionName, query);
-
-    // return this.cache.get(cacheKey, async () => {
-      console.log('DB find');
-
-      const collection = await this.getCollection(collectionName);
-      return collection.find(query).toArray();
-    // });
+    const collection = await this.getCollection(collectionName);
+    return collection.find(query).toArray();
 
   }
 
@@ -124,10 +102,6 @@ export default class Database {
     options?: UpdateManyOptions
   ): Promise<UpdateWriteOpResult> {
 
-    // const cacheKey = this.generateCacheKey(collectionName, query);
-
-    console.log('DB update');
-
     const collection = await this.getCollection(collectionName);
     return collection.updateMany(query, updater, options);
 
@@ -142,8 +116,6 @@ export default class Database {
    * @returns {Promise<WriteOpResult>} - answer from mongodb
    */
   public async remove (collectionName: string, query: object): Promise<DeleteWriteOpResultObject> {
-
-    console.log('DB remove');
 
     const collection = await this.getCollection(collectionName);
     return collection.deleteMany(query);

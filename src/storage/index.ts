@@ -44,11 +44,11 @@ export class Storage {
     });
 
     if (result.length === 0) {
-      this.database.insert(collection, reactions)
-        .then(() => {
-          /** Clear cache */
-          this.cache.del(moduleCacheKey);
-        });
+      await this.database.insert(collection, reactions);
+
+      /** Clear cache */
+      this.cache.del(moduleCacheKey);
+
       return;
     }
 
@@ -72,7 +72,7 @@ export class Storage {
           return result;
         }, {} as any);
 
-        this.database.update(
+        await this.database.update(
           collection,
           {
             id: reactions.id
@@ -81,11 +81,10 @@ export class Storage {
             $set: {
               ...newOptions
             }
-          })
-          .then(() => {
-            /** Clear cache */
-            this.cache.del(moduleCacheKey);
           });
+
+        /** Clear cache */
+        this.cache.del(moduleCacheKey);
       }
     }
     return new Reactions(id, title, options);
@@ -110,7 +109,7 @@ export class Storage {
       user: String(userId)
     };
 
-    const moduleCacheKey = `${collection}_${JSON.stringify(query)}`;
+    const moduleCacheKey = `${collection}_${query.user}`;
     const dbResult = await this.cache.get(moduleCacheKey, () => {
       return this.database.find(collection, query);
     });
@@ -144,6 +143,8 @@ export class Storage {
     const modulesCollection = this.getModulesCollection(domain);
     const userReactionsCollection = this.getUserReactionsCollection(domain, id);
     const userReaction = await this.getUserReaction(domain, id, userId);
+
+    console.log('userReaction', userReaction);
 
     const moduleQuery = {
       id

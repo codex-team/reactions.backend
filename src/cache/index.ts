@@ -8,17 +8,21 @@ export default class Cache {
   private cache: NodeCache;
 
   constructor (options: NodeCache.Options) {
-    console.log('Cache was initialized');
-
     this.cache = new NodeCache(options);
   }
 
+  /**
+   * Try to get value from cache
+   * Otherwise run function-initiator, cache value and return it.
+   *
+   * @param {Key} key - cache item identifier
+   * @param {() => Promise<any>} storeFunction - function which response you are waiting for
+   * @return {Promise<any>}
+   */
   async get (key: Key, storeFunction: () => Promise<any>) {
     const value = this.cache.get(key);
 
     if (value) {
-      console.log('Return from cache');
-
       return Promise.resolve(value);
     }
 
@@ -28,29 +32,27 @@ export default class Cache {
     });
   }
 
+  /**
+   * Clear target cached data
+   *
+   * @param {Key | Key[]} keys
+   */
   del (keys: Key | Key[]) {
-    console.log('Delete cached');
     this.cache.del(keys);
   }
 
-  delStartWith (startStr = '') {
-    if (!startStr) {
-      return;
-    }
-
-    const keys = this.cache.keys();
-
-    for (const key of keys) {
-      if (key.indexOf(startStr) === 0) {
-        this.del(key);
-      }
-    }
-  }
-
+  /**
+   * Clear all cache
+   */
   flush () {
     this.cache.flushAll();
   }
 
+  /**
+   * Time parts in seconds
+   *
+   * @return {{SECOND: number; MINUTE: number; HOUR: number; DAY: number; WEEK: number}}
+   */
   static get time () {
     return {
       SECOND: 1,
