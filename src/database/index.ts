@@ -30,7 +30,8 @@ export default class Database {
    * Creates an instance of Database
    *
    * @this {Database}
-   * @param {string} url - mongodb adress
+   * @param {string} url - mongodb address
+   * @param {string} dbName
    * @constructor
    */
   constructor (url: string, dbName: string) {
