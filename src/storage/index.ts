@@ -1,10 +1,13 @@
 import Database from './../database/index';
-import Reactions from '../models/Reactions';
+import Reactions from './../models/Reactions';
+import Cache from './../cache/index';
 
 /** Class which controls database */
 export class Storage {
 
   private database: Database;
+
+  private cache: Cache;
 
   /**
    * Creates an instance of the Storage
@@ -16,6 +19,9 @@ export class Storage {
    */
   constructor (url: string = process.env.DB_URL as string, dbName: string = process.env.DB_NAME as string) {
     this.database = new Database(url, dbName);
+    this.cache = new Cache({
+      stdTTL: Cache.time.MINUTE * 10
+    });
   }
 
   /**
@@ -31,10 +37,18 @@ export class Storage {
   public async getReactions (domain: string, reactions: Reactions): Promise<Reactions | undefined> {
     const collection = this.getModulesCollection(domain);
     const query = { id: reactions.id };
-    const result = await this.database.find(collection, query);
+
+    const moduleCacheKey = `${collection}_${reactions.id}`;
+    const result = await this.cache.get(moduleCacheKey, () => {
+      return this.database.find(collection, query);
+    });
 
     if (result.length === 0) {
-      this.database.insert(collection, reactions);
+      this.database.insert(collection, reactions)
+        .then(() => {
+          /** Clear cache */
+          this.cache.del(moduleCacheKey);
+        });
       return;
     }
 
@@ -61,13 +75,17 @@ export class Storage {
         this.database.update(
           collection,
           {
-            id: reactions.id,
+            id: reactions.id
           },
           {
             $set: {
               ...newOptions
             }
           })
+          .then(() => {
+            /** Clear cache */
+            this.cache.del(moduleCacheKey);
+          });
       }
     }
     return new Reactions(id, title, options);
@@ -92,7 +110,10 @@ export class Storage {
       user: String(userId)
     };
 
-    const dbResult = await this.database.find(collection, query);
+    const moduleCacheKey = `${collection}_${JSON.stringify(query)}`;
+    const dbResult = await this.cache.get(moduleCacheKey, () => {
+      return this.database.find(collection, query);
+    });
 
     if (dbResult.length === 0) {
       return;
@@ -125,7 +146,7 @@ export class Storage {
     const userReaction = await this.getUserReaction(domain, id, userId);
 
     const moduleQuery = {
-      id: id
+      id
     };
     const userReactionQuery = {
       user: String(userId)
@@ -142,6 +163,8 @@ export class Storage {
     /**
      * Update counters
      */
+    const moduleCacheKey = `${modulesCollection}_${moduleQuery.id}`;
+
     await this.database.update(
       modulesCollection,
       moduleQuery,
@@ -152,15 +175,23 @@ export class Storage {
       }
     );
 
+    /** Clear cache */
+    this.cache.del(moduleCacheKey);
+
     /**
      * Update user reaction
      */
+    const userCacheKey = `${userReactionsCollection}_${userReactionQuery.user}`;
+
     await this.database.update(
       userReactionsCollection,
       userReactionQuery,
       { $set: { reaction } },
       { upsert: true }
     );
+
+    /** Clear cache */
+    this.cache.del(userCacheKey);
 
     const savedReactions = await this.getReactions(domain, new Reactions(id));
     const reactions = new Reactions(savedReactions!.id, savedReactions!.title, savedReactions!.options);
@@ -197,21 +228,31 @@ export class Storage {
     /**
      * Update counters
      */
+    const moduleCacheKey = `${modulesCollection}_${moduleQuery.id}`;
+
     await this.database.update(
       modulesCollection,
       moduleQuery,
       {
-        $inc: {[`options.${reaction}`]: -1}
+        $inc: { [`options.${reaction}`]: -1 }
       }
     );
+
+    /** Clear cache */
+    this.cache.del(moduleCacheKey);
 
     /**
      * Remove user reaction
      */
+    const userCacheKey = `${userReactionsCollection}_${userReactionQuery.user}`;
+
     await this.database.remove(
       userReactionsCollection,
       userReactionQuery
     );
+
+    /** Clear cache */
+    this.cache.del(userCacheKey);
 
     const savedReactions = await this.getReactions(domain, new Reactions(id));
     const reactions = new Reactions(savedReactions!.id, savedReactions!.title, savedReactions!.options);
