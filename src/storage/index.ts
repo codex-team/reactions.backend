@@ -213,6 +213,11 @@ export class Storage {
 
     const modulesCollection = this.getModulesCollection(domain);
     const userReactionsCollection = this.getUserReactionsCollection(domain, id);
+    const userReaction = await this.getUserReaction(domain, id, userId);
+
+    if (userReaction !== +reaction) {
+      return;
+    }
 
     const moduleQuery = {
       id
