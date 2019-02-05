@@ -17,7 +17,8 @@ export default class Actions {
 
     if (dbResult && message.userId) {
       const userReaction = await storage.getUserReaction(domain, message.id, message.userId);
-
+      const token = await storage.getUserToken(domain, message.userId);
+      console.log('token \n', token);
       if (userReaction && userReaction in message.options!) {
         dbResult.reaction = userReaction;
       }

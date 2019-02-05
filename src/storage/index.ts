@@ -2,6 +2,12 @@ import Database from './../database/index';
 import Reactions from './../models/Reactions';
 import Cache from './../cache/index';
 
+interface UserToken {
+  id: string;
+  user: string;
+  startDate: Date;
+}
+
 /** Class which controls database */
 export class Storage {
 
@@ -99,7 +105,7 @@ export class Storage {
    *
    * @return {Promise<number | undefined>} - voted reaction
    */
-  public async getUserReaction (domain: string, id: string, userId: number | string): Promise<number | undefined> {
+  public async getUserReaction (domain: string, id: string, userId: string): Promise<number | undefined> {
 
     const collection = this.getUserReactionsCollection(domain, id);
     const query = {
@@ -119,6 +125,42 @@ export class Storage {
   }
 
   /**
+   * Returns id of the reaction selected by the user or undefined if user didn't vote
+   *
+   * @this {Storage}
+   * @async
+   *
+   * @param {string} domain - module`s domain
+   * @param {string} id - module`s id
+   * @param {string} userId - user id
+   *
+   * @return {Promise<number | undefined>} - voted reaction
+   */
+  public async getUserToken (domain: string, userId: string): Promise<UserToken> {
+
+    const collection = this.getTokensCollection(domain);
+    const query = {
+      user: String(userId)
+    };
+
+    const moduleCacheKey = `${collection}_${query.user}`;
+    const dbResult = await this.database.find(collection, query);
+
+    if (dbResult.length === 0) {
+      const token: UserToken = {
+        id: '1',
+        user: userId,
+        startDate: new Date()
+      };
+      await this.database.insert(collection, token);
+
+      return token;
+    }
+
+    return dbResult.shift();
+  }
+
+  /**
    * Updates user's choice and reactions counters
    *
    * @this {Storage}
@@ -134,7 +176,7 @@ export class Storage {
   public async vote (
     domain: string,
     id: string,
-    userId: number | string,
+    userId: string,
     reaction: number
   ): Promise<Reactions | undefined> {
     const modulesCollection = this.getModulesCollection(domain);
@@ -288,6 +330,17 @@ export class Storage {
    */
   private getUserReactionsCollection (domain: string, id: string): string {
     return `${domain}__${id}`;
+  }
+
+  /**
+   * Return name of the collection with tokes
+   *
+   * @param {string} domain - module`s domain
+   *
+   * @return {string} - name of the collection
+   */
+  private getTokensCollection (domain: string): string {
+    return `${domain}_${process.env.TOKENS_POSTFIX}`;
   }
 
 }

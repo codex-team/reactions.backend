@@ -25,7 +25,7 @@ const runSockets = (server: Server) => {
     socket.on('message', async (message) => {
       const type = message.type;
       let reactions: Reactions | undefined;
-
+      console.log('message', message);
       switch (type) {
         case 'initialization':
           socket.join(md5(message.id));
