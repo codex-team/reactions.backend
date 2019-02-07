@@ -1,12 +1,7 @@
 import Database from './../database/index';
 import Reactions from './../models/Reactions';
 import Cache from './../cache/index';
-
-interface UserToken {
-  id: string;
-  user: string;
-  startDate: Date;
-}
+import {UserToken} from '../actions';
 
 /** Class which controls database */
 export class Storage {
@@ -146,18 +141,33 @@ export class Storage {
     const moduleCacheKey = `${collection}_${query.user}`;
     const dbResult = await this.database.find(collection, query);
 
-    if (dbResult.length === 0) {
-      const token: UserToken = {
-        id: '1',
-        user: userId,
-        startDate: new Date()
-      };
-      await this.database.insert(collection, token);
+    return dbResult.pop();
+  }
 
-      return token;
-    }
+  /**
+   * Returns id of the reaction selected by the user or undefined if user didn't vote
+   *
+   * @this {Storage}
+   * @async
+   *
+   * @param {string} domain - module`s domain
+   * @param {string} id - module`s id
+   * @param {string} userId - user id
+   *
+   * @return {Promise<number | undefined>} - voted reaction
+   */
+  public async insertUserToken (domain: string, userId: string): Promise<UserToken> {
 
-    return dbResult.shift();
+    const collection = this.getTokensCollection(domain);
+    let token: UserToken = {
+      _id: '',
+      user: userId,
+      startDate: new Date()
+    };
+    token = (await this.database.insert(collection, token)).ops[0];
+
+    return token;
+
   }
 
   /**

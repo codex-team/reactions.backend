@@ -1,0 +1,1 @@
+export const TOKEN_LIFETIME_IN_MINUTES = 10;

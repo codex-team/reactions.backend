@@ -25,15 +25,21 @@ const runSockets = (server: Server) => {
     socket.on('message', async (message) => {
       const type = message.type;
       let reactions: Reactions | undefined;
-      console.log('message', message);
+      let token: string | undefined;
+      console.log(message);
       switch (type) {
         case 'initialization':
           socket.join(md5(message.id));
 
           reactions = await actions.getReactions(message.origin, message);
-
+          // console.log('reaxtions', reactions);
           socket.emit('update', reactions);
           return;
+
+        case 'getToken':
+          token = await actions.getToken(message.origin, message.userId);
+          socket.emit('receiveToken', token);
+          break;
 
         case 'vote':
           reactions = await actions.vote(message.origin, message);
