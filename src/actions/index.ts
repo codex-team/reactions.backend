@@ -36,9 +36,9 @@ export default class Actions {
   }
 
   /**
-   * Return Reactions by domain and id.
+   * Return token by domain and user id.
    * @param {string} domain - module`s domain
-   * @param {string} userId
+   * @param {string} userId - user id
    *
    * @return {Promise<string | undefined>} token.
    */
@@ -47,7 +47,6 @@ export default class Actions {
     if (!token || new Date(token.startDate.getTime() + TOKEN_LIFETIME_IN_MINUTES * 60000) < new Date()) {
       token = await storage.insertUserToken(domain, userId);
     }
-    console.log('token \n', token);
 
     return token._id;
   }

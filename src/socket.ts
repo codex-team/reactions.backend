@@ -32,7 +32,6 @@ const runSockets = (server: Server) => {
           socket.join(md5(message.id));
 
           reactions = await actions.getReactions(message.origin, message);
-          // console.log('reaxtions', reactions);
           socket.emit('update', reactions);
           return;
 

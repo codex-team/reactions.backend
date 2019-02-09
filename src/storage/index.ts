@@ -120,16 +120,15 @@ export class Storage {
   }
 
   /**
-   * Returns id of the reaction selected by the user or undefined if user didn't vote
+   * Returns token
    *
    * @this {Storage}
    * @async
    *
    * @param {string} domain - module`s domain
-   * @param {string} id - module`s id
    * @param {string} userId - user id
    *
-   * @return {Promise<number | undefined>} - voted reaction
+   * @return {Promise<UserToken>} - token
    */
   public async getUserToken (domain: string, userId: string): Promise<UserToken> {
 
@@ -145,28 +144,26 @@ export class Storage {
   }
 
   /**
-   * Returns id of the reaction selected by the user or undefined if user didn't vote
+   * Insert token
    *
    * @this {Storage}
    * @async
    *
    * @param {string} domain - module`s domain
-   * @param {string} id - module`s id
    * @param {string} userId - user id
    *
-   * @return {Promise<number | undefined>} - voted reaction
+   * @return {Promise<UserToken>} - inserted token
    */
   public async insertUserToken (domain: string, userId: string): Promise<UserToken> {
 
     const collection = this.getTokensCollection(domain);
-    let token: UserToken = {
-      _id: '',
+    let token = {
       user: userId,
       startDate: new Date()
     };
     token = (await this.database.insert(collection, token)).ops[0];
 
-    return token;
+    return token as UserToken;
 
   }
 
