@@ -1,12 +1,6 @@
 import Reactions from '../models/Reactions';
 import storage from '../storage';
-import { TOKEN_LIFETIME_IN_MINUTES } from '../constants/token';
-
-export interface UserToken {
-  user: string;
-  startDate: Date;
-  _id: string;
-}
+import voteTokenActions from './vote-token';
 
 /** Class aggregating an application business logic. */
 export default class Actions {
@@ -36,22 +30,6 @@ export default class Actions {
   }
 
   /**
-   * Return token by domain and user id.
-   * @param {string} domain - module`s domain
-   * @param {string} userId - user id
-   *
-   * @return {Promise<string | undefined>} token.
-   */
-  public static async getToken (domain: string, userId: string): Promise<string | undefined> {
-    let token = await storage.getUserToken(domain, userId);
-    if (!token || new Date(token.startDate.getTime() + TOKEN_LIFETIME_IN_MINUTES * 60000) < new Date()) {
-      token = await storage.insertUserToken(domain, userId);
-    }
-
-    return token._id;
-  }
-
-  /**
    * Add user vote
    *
    * @param {string} domain - module`s domain
@@ -60,10 +38,9 @@ export default class Actions {
    * @return {Reactions} - updated reactions
    */
   public static async vote (domain: string, message: any): Promise<Reactions | undefined> {
-    const token = await storage.getUserToken(domain, message.userId!);
-    if (token
-      && token._id.toString() === message.token
-      && new Date(token.startDate.getTime() + TOKEN_LIFETIME_IN_MINUTES * 60000) > new Date()) {
+    const isTokenValid = await voteTokenActions.check(domain, message.userId, message.token);
+
+    if (isTokenValid) {
       return storage.vote(domain, message.id, message.userId!, message.reaction!);
     }
   }
@@ -77,10 +54,9 @@ export default class Actions {
    * @return {Reactions} - updated reactions
    */
   public static async unvote (domain: string, message: any): Promise<Reactions | undefined> {
-    const token = await storage.getUserToken(domain, message.userId!);
-    if (token
-      && token._id.toString() === message.token
-      && new Date(token.startDate.getTime() + TOKEN_LIFETIME_IN_MINUTES * 60000) > new Date()) {
+    const isTokenValid = await voteTokenActions.check(domain, message.userId, message.token);
+
+    if (isTokenValid) {
       return storage.unvote(domain, message.id, message.userId, message.reaction);
     }
   }

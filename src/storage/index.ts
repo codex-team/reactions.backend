@@ -1,7 +1,7 @@
 import Database from './../database/index';
 import Reactions from './../models/Reactions';
 import Cache from './../cache/index';
-import {UserToken} from '../actions';
+import {UserToken} from '../actions/vote-token';
 
 /** Class which controls database */
 export class Storage {
@@ -120,7 +120,7 @@ export class Storage {
   }
 
   /**
-   * Returns token
+   * Returns token that indicates if user can vote
    *
    * @this {Storage}
    * @async
