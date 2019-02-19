@@ -40,4 +40,11 @@ export default class VoteTokenActions {
     return lastToken && lastToken._id.toString() === token
       && new Date(lastToken.startDate.getTime() + Number(process.env.TOKEN_LIFETIME_IN_MINUTES) * 60000) > new Date();
   }
+
+  /**
+   * Delete all expired tokens
+   */
+  public static async deleteExpiredTokens () {
+    storage.deleteExpiredUserTokens();
+  }
 }

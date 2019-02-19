@@ -56,6 +56,19 @@ export default class Database {
   }
 
   /**
+   * Returns list of collections
+   *
+   * @this {Database}
+   * @public
+   */
+  public async listCollections (): Promise<Collection[]> {
+
+    const db = (await this.connection).db(this.dbName);
+    return db.collections();
+
+  }
+
+  /**
    * Inserts elements in the database
    *
    * @this {Database}
