@@ -3,7 +3,7 @@ import VoteTokenActions from './vote-token';
 
 /** Class responsible for cron jobs. */
 export class CronJobActions {
-  /** Delete expired token every day. */
+  /** Delete expired token by end of every day. */
   public userTokenDeletionCron: CronJob;
 
   /**

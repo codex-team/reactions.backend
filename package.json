@@ -11,7 +11,6 @@
   "author": "codex-team",
   "license": "MIT",
   "dependencies": {
-    "@types/cron": "^1.6.0",
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "cron": "^1.6.0",
@@ -30,6 +29,7 @@
     "@types/mongodb": "^3.1.14",
     "@types/node": "^10.12.7",
     "@types/socket.io": "^2.1.0",
+    "@types/cron": "^1.6.0",
     "dotenv": "^6.2.0",
     "jsdoc": "^3.5.5",
     "md5": "^2.2.1",
