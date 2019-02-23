@@ -172,25 +172,6 @@ export class Storage {
   }
 
   /**
-   * Delete all expired tokens
-   *
-   * @this {Storage}
-   * @async
-   */
-  public async deleteExpiredUserTokens () {
-    let collections = await this.getAllTokensCollection();
-
-    collections.forEach(collection => {
-      this.database.remove(
-        collection,
-        {
-          'startDate' : { '$lte': new Date((new Date().getTime()) - Number(process.env.TOKEN_LIFETIME_IN_MINUTES) * 60000) }
-        }
-      );
-    });
-  }
-
-  /**
    * Updates user's choice and reactions counters
    *
    * @this {Storage}
@@ -371,29 +352,6 @@ export class Storage {
    */
   private getTokensCollection (domain: string): string {
     return `${domain}_${process.env.TOKENS_POSTFIX}`;
-  }
-
-  /**
-   * Return names of all tokens collections
-   *
-   * @return {string[]} - all tokens collections
-   */
-  private async getAllTokensCollection (): Promise<string[]> {
-    const regex = new RegExp(`${process.env.TOKENS_POSTFIX}$`);
-
-    let names = await this.getCollectionsNames();
-    return names.filter((name) => name.match(regex));
-  }
-
-  /**
-   * Return names of all collections
-   *
-   * @return {string[]} - all collections
-   */
-
-  private async getCollectionsNames (): Promise<string[]> {
-    const collections = await this.database.listCollections();
-    return collections.map((collection: Collection) => collection.collectionName);
   }
 
   /**
