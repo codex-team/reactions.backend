@@ -4,7 +4,7 @@ import {
   InsertWriteOpResult,
   UpdateWriteOpResult,
   DeleteWriteOpResultObject,
-  UpdateManyOptions, FilterQuery, UpdateQuery
+  UpdateManyOptions, FilterQuery, UpdateQuery, IndexOptions
 } from 'mongodb';
 
 /** Database wrapper */
@@ -95,6 +95,22 @@ export default class Database {
 
     const collection = await this.getCollection(collectionName);
     return collection.find(query).toArray();
+
+  }
+
+  /**
+   * Creates index
+   *
+   * @this {Database}
+   * @param {string} collectionName - name of the collection
+   * @param {any} field - field for index
+   * @param {IndexOptions} options - options for index
+   * @returns {Promise<string>} index name
+   */
+  public async createIndex (collectionName: string, field: any, options: IndexOptions): Promise<string> {
+
+    const collection = await this.getCollection(collectionName);
+    return collection.createIndex(field, options);
 
   }
 

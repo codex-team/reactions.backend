@@ -1,8 +1,8 @@
 import Database from './../database/index';
 import Reactions from './../models/Reactions';
 import Cache from './../cache/index';
-import { UserToken } from '../actions/vote-token';
-import { Collection } from 'mongodb';
+import {UserToken} from '../actions/vote-token';
+import {Collection} from 'mongodb';
 
 /** Class which controls database */
 export class Storage {
@@ -134,6 +134,9 @@ export class Storage {
   public async getUserToken (domain: string, userId: string): Promise<UserToken> {
 
     const collection = this.getTokensCollection(domain);
+
+    await this.createTTLIndex(collection, 'startDate', Number(process.env.TOKEN_LIFETIME_IN_MINUTES) * 60);
+
     const query = {
       user: String(userId)
     };
@@ -391,6 +394,16 @@ export class Storage {
   private async getCollectionsNames (): Promise<string[]> {
     const collections = await this.database.listCollections();
     return collections.map((collection: Collection) => collection.collectionName);
+  }
+
+  /**
+   * Return name of created index
+   *
+   * @return {Promise<string>} - name of created index
+   */
+
+  private async createTTLIndex (collection: string, field: string, duration: number): Promise<string> {
+    return this.database.createIndex(collection, { [field]: 1 }, { expireAfterSeconds: duration });
   }
 
 }
