@@ -361,7 +361,7 @@ export class Storage {
    */
 
   private async createTTLIndex (collection: string, field: string, duration: number): Promise<string> {
-    return this.database.createIndex(collection, { [field]: 1 }, { expireAfterSeconds: duration });
+    return this.database.createIndex(collection, { [field]: 1 }, { expireAfterSeconds: duration, background: true });
   }
 
 }
