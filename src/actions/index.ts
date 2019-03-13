@@ -1,5 +1,6 @@
 import Reactions from '../models/Reactions';
 import storage from '../storage';
+import voteTokenActions from './vote-token';
 
 /** Class aggregating an application business logic. */
 export default class Actions {
@@ -36,8 +37,12 @@ export default class Actions {
    *
    * @return {Reactions} - updated reactions
    */
-  public static async vote (domain: string, message: Reactions): Promise<Reactions | undefined> {
-    return storage.vote(domain, message.id, message.userId!, message.reaction!);
+  public static async vote (domain: string, message: any): Promise<Reactions | undefined> {
+    const isTokenValid = await voteTokenActions.check(domain, message.userId, message.token);
+
+    if (isTokenValid) {
+      return storage.vote(domain, message.id, message.userId!, message.reaction!);
+    }
   }
 
   /**
@@ -49,6 +54,10 @@ export default class Actions {
    * @return {Reactions} - updated reactions
    */
   public static async unvote (domain: string, message: any): Promise<Reactions | undefined> {
-    return storage.unvote(domain, message.id, message.userId, message.reaction);
+    const isTokenValid = await voteTokenActions.check(domain, message.userId, message.token);
+
+    if (isTokenValid) {
+      return storage.unvote(domain, message.id, message.userId, message.reaction);
+    }
   }
 }

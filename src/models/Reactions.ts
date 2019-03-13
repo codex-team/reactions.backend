@@ -17,7 +17,7 @@ export default class Reactions {
   /**
    * Id of user who has voted
    */
-  public userId?: number | string;
+  public userId?: string;
 
   /**
    * Create a Reactions class.

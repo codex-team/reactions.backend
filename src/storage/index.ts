@@ -1,6 +1,8 @@
 import Database from './../database/index';
 import Reactions from './../models/Reactions';
 import Cache from './../cache/index';
+import {UserToken} from '../actions/vote-token';
+import {Collection} from 'mongodb';
 
 /** Class which controls database */
 export class Storage {
@@ -99,7 +101,7 @@ export class Storage {
    *
    * @return {Promise<number | undefined>} - voted reaction
    */
-  public async getUserReaction (domain: string, id: string, userId: number | string): Promise<number | undefined> {
+  public async getUserReaction (domain: string, id: string, userId: string): Promise<number | undefined> {
 
     const collection = this.getUserReactionsCollection(domain, id);
     const query = {
@@ -119,6 +121,57 @@ export class Storage {
   }
 
   /**
+   * Returns token that indicates if user can vote
+   *
+   * @this {Storage}
+   * @async
+   *
+   * @param {string} domain - module`s domain
+   * @param {string} userId - user id
+   *
+   * @return {Promise<UserToken>} - token
+   */
+  public async getUserToken (domain: string, userId: string): Promise<UserToken> {
+
+    const collection = this.getTokensCollection(domain);
+
+    await this.createTTLIndex(collection, 'startDate', Number(process.env.TOKEN_LIFETIME_IN_MINUTES) * 60);
+
+    const query = {
+      user: String(userId)
+    };
+
+    const moduleCacheKey = `${collection}_${query.user}`;
+    const dbResult = await this.database.find(collection, query);
+
+    return dbResult.pop();
+  }
+
+  /**
+   * Insert token
+   *
+   * @this {Storage}
+   * @async
+   *
+   * @param {string} domain - module`s domain
+   * @param {string} userId - user id
+   *
+   * @return {Promise<UserToken>} - inserted token
+   */
+  public async insertUserToken (domain: string, userId: string): Promise<UserToken> {
+
+    const collection = this.getTokensCollection(domain);
+    let token = {
+      user: userId,
+      startDate: new Date()
+    };
+    token = (await this.database.insert(collection, token)).ops[0];
+
+    return token as UserToken;
+
+  }
+
+  /**
    * Updates user's choice and reactions counters
    *
    * @this {Storage}
@@ -134,7 +187,7 @@ export class Storage {
   public async vote (
     domain: string,
     id: string,
-    userId: number | string,
+    userId: string,
     reaction: number
   ): Promise<Reactions | undefined> {
     const modulesCollection = this.getModulesCollection(domain);
@@ -288,6 +341,27 @@ export class Storage {
    */
   private getUserReactionsCollection (domain: string, id: string): string {
     return `${domain}__${id}`;
+  }
+
+  /**
+   * Return name of the collection with tokens
+   *
+   * @param {string} domain - module`s domain
+   *
+   * @return {string} - name of the collection
+   */
+  private getTokensCollection (domain: string): string {
+    return `${domain}_${process.env.TOKENS_POSTFIX}`;
+  }
+
+  /**
+   * Return name of created index
+   *
+   * @return {Promise<string>} - name of created index
+   */
+
+  private async createTTLIndex (collection: string, field: string, duration: number): Promise<string> {
+    return this.database.createIndex(collection, { [field]: 1 }, { expireAfterSeconds: duration, background: true });
   }
 
 }
