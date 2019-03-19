@@ -1,7 +1,8 @@
 import { Server } from 'http';
 import Io, { Socket } from 'socket.io';
 import md5 from 'md5';
-import actions from './actions';
+import reactionActions from './actions';
+import voteTokenActions from './actions/vote-token';
 import Reactions from './models/Reactions';
 
 /**
@@ -25,22 +26,26 @@ const runSockets = (server: Server) => {
     socket.on('message', async (message) => {
       const type = message.type;
       let reactions: Reactions | undefined;
-
+      let token: string | undefined;
       switch (type) {
         case 'initialization':
           socket.join(md5(message.id));
 
-          reactions = await actions.getReactions(message.origin, message);
-
+          reactions = await reactionActions.getReactions(message.origin, message);
           socket.emit('update', reactions);
           return;
 
+        case 'getToken':
+          token = await voteTokenActions.get(message.origin, message.userId);
+          socket.emit('receiveToken', token);
+          break;
+
         case 'vote':
-          reactions = await actions.vote(message.origin, message);
+          reactions = await reactionActions.vote(message.origin, message);
           break;
 
         case 'unvote':
-          reactions = await actions.unvote(message.origin, message);
+          reactions = await reactionActions.unvote(message.origin, message);
           break;
       }
 
