@@ -29,7 +29,7 @@ export class Routes {
     });
 
     this.app.use('/emoji', async (req, res) => {
-      res.sendFile(path.resolve('./emoji/' + req.url));
+      res.sendFile(path.resolve(__dirname, '..', '..', 'emoji' + req.url));
     });
 
     /** Wrong route handle */
