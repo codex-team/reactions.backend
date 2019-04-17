@@ -1,6 +1,6 @@
 import express, { Express } from 'express';
 import Actions from '../actions';
-
+import path from 'path';
 /** Class aggregating an application routes. */
 export class Routes {
 
@@ -26,6 +26,10 @@ export class Routes {
     /** Root route */
     this.app.get('/', async (req, res) => {
       res.send({ msg: 'Server is up and running' });
+    });
+
+    this.app.use('/emoji', async (req, res) => {
+      res.sendFile(path.resolve(__dirname, '..', '..', 'emoji' + req.url));
     });
 
     /** Wrong route handle */
